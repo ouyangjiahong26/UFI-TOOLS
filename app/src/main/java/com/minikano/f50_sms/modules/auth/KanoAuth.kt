@@ -5,6 +5,7 @@ import com.minikano.f50_sms.utils.KanoLog
 import com.minikano.f50_sms.utils.KanoUtils
 import com.minikano.f50_sms.utils.KanoUtils.Companion.normalizeLeadingSlashes
 import com.minikano.f50_sms.utils.KanoUtils.Companion.normalizePath
+import com.minikano.f50_sms.utils.PassHash
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
@@ -15,6 +16,32 @@ object KanoAuth {
     val PREF_LOGIN_TOKEN = "login_token"
     val PREF_TOKEN_ENABLED = "login_token_enabled"
     val REQUEST_SECRET_KEY = "minikano_kOyXz0Ciz4V7wR0IeKmJFYFQ20jd"
+
+    // 口令校验结果的短时缓存。口令存储为 12 万轮加盐哈希，逐请求重算会拖垮前端轮询；
+    // 命中缓存的请求在换口令后最长 5 分钟内仍可用，过期自动失效
+    private const val VERIFY_CACHE_TTL_MS = 5 * 60 * 1000L
+    private val verifyCache = HashMap<String, Long>()
+
+    fun invalidateLoginCache() {
+        synchronized(verifyCache) { verifyCache.clear() }
+    }
+
+    private fun verifyLoginToken(authValue: String, stored: String): Boolean {
+        val now = System.currentTimeMillis()
+        synchronized(verifyCache) {
+            val expiry = verifyCache[authValue]
+            if (expiry != null) {
+                if (now < expiry) return true
+                verifyCache.remove(authValue)
+            }
+        }
+
+        val ok = PassHash.verify(authValue.toCharArray(), stored)
+        if (ok) {
+            synchronized(verifyCache) { verifyCache[authValue] = now + VERIFY_CACHE_TTL_MS }
+        }
+        return ok
+    }
 
     val apiWhiteListExact: Set<String> = setOf(
             "/api/get_custom_head",
@@ -63,7 +90,7 @@ object KanoAuth {
             return false
         }
 
-        if (!KanoUtils.constantTimeSha256Equals(authHeader.trim(), tokenStored)) {
+        if (!verifyLoginToken(authHeader.trim(), tokenStored)) {
             return false
         }
 

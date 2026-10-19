@@ -37,7 +37,7 @@
 | `kano-sign`    | 用于验证请求合法性的签名字符串（算法见下）                    |
 | `authorization` | 登录口令经过 SHA-256 后的小写十六进制字符串。初始默认口令为 `admin` |
 
-> 服务端会将 `authorization` 再次做 SHA-256 后与存储的口令哈希做常量时间比对，等价于要求 `authorization == SHA256(口令)`。
+> 服务端将收到的 `authorization` 值交由加盐多轮哈希（PassHash，12 万轮）校验，等价于要求 `authorization == SHA256(口令)`。口令在设备上不以无盐单轮哈希形式存储，被提取后也难以离线暴力破解。
 
 ------
 
@@ -861,7 +861,7 @@ UFI-TOOLS 内置了两个 CLI 请求工具，部署在设备 `/data/data/com.min
 
 ### 4.1 `ufi_req` —— 请求 UFI-TOOLS `/api/` 接口
 
-自动完成签名（`kano-t`/`kano-sign`）与鉴权（`authorization`）。**在不传 `-pass` 时会自动读取本机存储的口令哈希**（`/data/data/com.minikano.f50_sms/shared_prefs/kano_ZTE_store.xml` 中的 `login_token`），因此设备本机使用时无需知道明文口令。
+自动完成签名（`kano-t`/`kano-sign`）与鉴权（`authorization`）。设备存储的口令是加盐多轮哈希，无法还原，因此 **`-pass` 为必填参数**，需要提供登录口令明文。
 
 ```shell
 :/ # /data/data/com.minikano.f50_sms/files/ufi_req
@@ -881,7 +881,7 @@ ufi_req - MiniKano签名请求工具
   -host string
         目标地址，比如 "192.168.0.1" 或 "192.168.0.1:2333" (选填) (default "192.168.0.1:2333")
   -pass string
-        密码明文，用于生成 Authorization=sha256(password) (可以不填，不填自动获取本机的密码)
+        密码明文，用于生成 Authorization=sha256(password) (必填)
   -t int
         超时秒数 (default 10)
 ```

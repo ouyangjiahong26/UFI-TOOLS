@@ -887,14 +887,15 @@ class KanoUtils {
         }
 
         fun transformLoginToken(context: Context,prefs: SharedPreferences){
-            //预处理口令，如果口令存储为明文，则进行hash
+            //预处理口令：明文或无盐单轮哈希升级为 PassHash 格式
             val token = prefs.getString("login_token","") ?: ""
-            if(!(token.isEmpty() || token.isBlank())){
-                //如果存储的口令不是hash，则进行更改
-                if(!isSha256Hex(token) ){
-                    val hashToken = sha256Hex(token)
-                    prefs.edit(commit = true) { putString("login_token", hashToken) }
-                }
+            if(token.isEmpty() || token.isBlank()) return
+            if(token.startsWith("sha256$")) return // 已是 PassHash 格式
+
+            //客户端发送的 authorization 是 sha256(口令) 的 hex，存储必须对该值做 PassHash
+            val authValue = if(isSha256Hex(token)) token else sha256Hex(token)
+            prefs.edit(commit = true) {
+                putString("login_token", PassHash.hash(authValue.toCharArray(), PassHash.generateSalt()))
             }
         }
         private val PREFS_NAME = "kano_ZTE_store"
@@ -914,7 +915,7 @@ class KanoUtils {
             val existing = spf.all
             spf.edit(commit = true) {
                 if (!existing.containsKey(PREF_LOGIN_TOKEN)) {
-                    putString(PREF_LOGIN_TOKEN, KanoUtils.sha256Hex("admin"))
+                    putString(PREF_LOGIN_TOKEN, PassHash.hash(sha256Hex("admin").toCharArray(), PassHash.generateSalt()))
                     updateIsDefaultOrWeakToken(context,true)
                 }
                 if (!existing.containsKey(PREF_ISDEBUG)) {

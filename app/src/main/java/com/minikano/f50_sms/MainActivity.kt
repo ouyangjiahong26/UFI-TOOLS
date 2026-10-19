@@ -45,9 +45,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.minikano.f50_sms.configs.AppMeta
+import com.minikano.f50_sms.modules.auth.KanoAuth
 import com.minikano.f50_sms.utils.DeviceModelChecker
 import com.minikano.f50_sms.utils.KanoLog
 import com.minikano.f50_sms.utils.KanoUtils
+import com.minikano.f50_sms.utils.PassHash
 import com.minikano.f50_sms.utils.ShellKano
 import com.minikano.f50_sms.utils.UniqueDeviceIDManager
 import com.minikano.f50_sms.utils.WakeLock
@@ -373,9 +375,12 @@ class MainActivity : ComponentActivity() {
 
                                 if(!loginTokenInput.isBlank()){
                                     sharedPrefs.edit(commit = true) {
-                                        putString(PREF_LOGIN_TOKEN,KanoUtils.sha256Hex(loginTokenInput.ifBlank { "admin" }) )
-                                        updateIsDefaultOrWeakToken(context,KanoUtils.isWeakToken(loginTokenInput.ifBlank { "admin" }))
+                                        val input = loginTokenInput.ifBlank { "admin" }
+                                        //客户端发送的 authorization 是 sha256(口令) 的 hex，存储对该值做加盐多轮哈希
+                                        putString(PREF_LOGIN_TOKEN, PassHash.hash(KanoUtils.sha256Hex(input).toCharArray(), PassHash.generateSalt()))
+                                        updateIsDefaultOrWeakToken(context,KanoUtils.isWeakToken(input))
                                     }
+                                    KanoAuth.invalidateLoginCache()
                                 }
 
                                 sharedPrefs.edit(commit = true) {
