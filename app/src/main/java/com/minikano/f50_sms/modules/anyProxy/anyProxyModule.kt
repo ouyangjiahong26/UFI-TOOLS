@@ -39,6 +39,25 @@ private val proxyHttpClient: OkHttpClient = OkHttpClient.Builder()
         maxRequests = 32
         maxRequestsPerHost = 8
     })
+    // 目标校验放在 Dns 里做：校验与连接使用同一次解析结果，先校验后连接的两次解析可被 DNS rebinding 绕过
+    .dns(object : Dns {
+        override fun lookup(hostname: String): List<InetAddress> {
+            if (forbiddenDomains.any { it.equals(hostname, ignoreCase = true) }) {
+                throw UnknownHostException("proxy target domain is not allowed: $hostname")
+            }
+            val addresses = InetAddress.getAllByName(hostname).toList()
+            if (addresses.any {
+                    it.isAnyLocalAddress || // 0.0.0.0
+                    it.isLoopbackAddress || // 127.0.0.1, ::1
+                    it.isLinkLocalAddress || // 169.254.x.x
+                    it.isSiteLocalAddress // 192.168.x.x, 10.x.x.x, 172.16.x.x
+                }
+            ) {
+                throw UnknownHostException("proxy target address is not allowed: $hostname")
+            }
+            return addresses
+        }
+    })
     .addInterceptor { chain ->
         val request = chain.request().newBuilder()
             .removeHeader("Accept-Encoding")
@@ -57,27 +76,6 @@ val forbiddenDomains = listOf(
     "ufi.ztedevice.com"
 )
 
-fun isForbiddenHost(targetUrl: String): Boolean {
-    return try {
-        val uri = URI(targetUrl)
-        val host = uri.host ?: return true
-        if (forbiddenDomains.any { it.equals(host, ignoreCase = true) }) {
-            return true
-        }
-        val addresses = InetAddress.getAllByName(host)
-        addresses.any { address ->
-            address.isAnyLocalAddress || // 0.0.0.0
-            address.isLoopbackAddress || // 127.0.0.1, ::1
-            address.isLinkLocalAddress || // 169.254.x.x
-            address.isSiteLocalAddress // 192.168.x.x, 10.x.x.x, 172.16.x.x
-        }
-    } catch (e: UnknownHostException) {
-        true
-    } catch (e: Exception) {
-        true
-    }
-}
-
 fun Route.anyProxyModule(context: Context) {
     val TAG = "[$BASE_TAG]_anyProxyModule"
 
@@ -86,7 +84,16 @@ fun Route.anyProxyModule(context: Context) {
             val rawPath = call.request.uri.removePrefix("/api/proxy/")
             val targetUrl = rawPath.removePrefix("--")
 
-            if (isForbiddenHost(targetUrl)) {
+            // 目标地址校验在 OkHttp Dns 中完成，这里只做基本格式检查
+            val targetUri = try {
+                URI(targetUrl)
+            } catch (e: Exception) {
+                null
+            }
+            if (targetUri == null ||
+                targetUri.scheme?.lowercase() !in listOf("http", "https") ||
+                targetUri.host.isNullOrBlank()
+            ) {
                 call.respond(HttpStatusCode.Forbidden, "Access to target address is not allowed.")
                 return@handle
             }
@@ -148,12 +155,9 @@ fun Route.anyProxyModule(context: Context) {
                     }
                 }
 
-                val origin = call.request.header("Origin") ?: "*"
-                if (origin != "*") {
-                    call.response.headers.append("Access-Control-Allow-Origin", origin)
-                    call.response.headers.append("Access-Control-Allow-Credentials", "true")
-                    call.response.headers.append("Access-Control-Expose-Headers", "Kano-SetCk")
-                }
+                // 固定为 * 且不携带凭据：反射 Origin 并允许凭据会让任意网页借用户浏览器跨域读取代理响应
+                call.response.headers.append("Access-Control-Allow-Origin", "*")
+                call.response.headers.append("Access-Control-Expose-Headers", "Kano-SetCk")
 
                 if (responseBody != null) {
                     if (contentType?.match(ContentType.Text.Html) == true) {
