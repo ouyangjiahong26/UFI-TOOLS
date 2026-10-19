@@ -5,7 +5,9 @@ import com.minikano.f50_sms.modules.adb.adbModule
 import com.minikano.f50_sms.modules.advanced.advancedToolsModule
 import com.minikano.f50_sms.modules.at.anyProxyModule
 import com.minikano.f50_sms.modules.at.atModule
+import com.minikano.f50_sms.modules.auth.KanoAuth
 import com.minikano.f50_sms.modules.auth.authenticatedRoute
+import com.minikano.f50_sms.modules.auth.signKeyModule
 import com.minikano.f50_sms.modules.config.configModule
 import com.minikano.f50_sms.modules.deviceInfo.baseDeviceInfoModule
 import com.minikano.f50_sms.modules.ota.otaModule
@@ -28,9 +30,14 @@ fun Application.mainModule(context: Context, proxyServerIp: String) {
     val targetServerIP = proxyServerIp  // 目标服务器地址
     val TAG = "[$BASE_TAG]_reverseProxyModule"
 
+    // 服务启动即生成签名密钥，保证本机工具（ufi_req）能直接从设备存储读到
+    KanoAuth.getOrCreateSignKey(context)
+
     routing {
         // 静态资源
         staticFileModule(context)
+
+        signKeyModule(context)
 
         authenticatedRoute(context) {
 
