@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"crypto/hmac"
-	"crypto/md5"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -18,39 +17,17 @@ import (
 	"time"
 )
 
-const secretKey = "minikano_kOyXz0Ciz4V7wR0IeKmJFYFQ20jd"
-
 func sha256Hex(data []byte) string {
 	sum := sha256.Sum256(data)
 	return hex.EncodeToString(sum[:]) // 默认就是小写
 }
 
-func hmacMD5(data []byte, key []byte) []byte {
-	h := hmac.New(md5.New, key)
-	h.Write(data)
-	return h.Sum(nil) // 16 bytes
-}
-
-// 生成 kano-sign
-func makeKanoSign(methodUpper, urlPath string, tsMillis string) string {
+// 生成 kano-sign，标准 HMAC-SHA256
+func makeKanoSign(methodUpper, urlPath, tsMillis string, key []byte) string {
 	rawData := "minikano" + methodUpper + urlPath + tsMillis
-
-	// HMAC-MD5 -> 16 bytes
-	h := hmacMD5([]byte(rawData), []byte(secretKey))
-
-	mid := len(h) / 2 // 8
-	part1 := h[:mid]
-	part2 := h[mid:]
-
-	// SHA256(part1/part2) -> 32 bytes each (NOT hex string)
-	sha1 := sha256Bytes(part1)
-	sha2 := sha256Bytes(part2)
-
-	// concat 64 bytes then SHA256
-	combined := append(sha1, sha2...)
-	final := sha256.Sum256(combined)
-
-	return hex.EncodeToString(final[:]) // 小写hex
+	h := hmac.New(sha256.New, key)
+	h.Write([]byte(rawData))
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 func normalizeMethod(m string) string {
@@ -84,9 +61,33 @@ func buildURL(host, endpoint string) (*url.URL, error) {
 	return url.Parse(full)
 }
 
-func sha256Bytes(data []byte) []byte {
-	sum := sha256.Sum256(data)
-	return sum[:]
+// 从设备私有存储读取按设备生成的签名密钥
+func GetSignKey() (string, error) {
+	return readPrefValue("sign_key")
+}
+
+func readPrefValue(name string) (string, error) {
+	path := "/data/data/com.minikano.f50_sms/shared_prefs/kano_ZTE_store.xml"
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	var prefs SharedPrefs
+
+	err = xml.Unmarshal(data, &prefs)
+	if err != nil {
+		return "", err
+	}
+
+	for _, item := range prefs.Items {
+		if item.Name == name {
+			return item.Value, nil
+		}
+	}
+
+	return "", nil
 }
 
 func printJSONError(msg string, err error) {
@@ -106,27 +107,27 @@ type Item struct {
 }
 
 func GetLoginTokenSHA256() (string, error) {
-	path := "/data/data/com.minikano.f50_sms/shared_prefs/kano_ZTE_store.xml"
+	return readPrefValue("login_token")
+}
 
-	data, err := os.ReadFile(path)
+// 远程使用时从目标服务器获取该设备的签名密钥
+func getSignKeyFromServer(hostPort string) (string, error) {
+	resp, err := http.Get("http://" + hostPort + "/api/get_sign_key")
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 
-	var prefs SharedPrefs
-
-	err = xml.Unmarshal(data, &prefs)
-	if err != nil {
+	var out struct {
+		Key string `json:"key"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
 		return "", err
 	}
-
-	for _, item := range prefs.Items {
-		if item.Name == "login_token" {
-			return item.Value, nil
-		}
+	if out.Key == "" {
+		return "", fmt.Errorf("服务器未返回签名密钥")
 	}
-
-	return "", nil
+	return out.Key, nil
 }
 
 func main() {
@@ -141,6 +142,8 @@ func main() {
 
 	//获取本机sha256密码
 	tokenSHA256, _ := GetLoginTokenSHA256()
+	//获取本机签名密钥
+	signKey, _ := GetSignKey()
 
 	flag.StringVar(&host, "host", "192.168.0.1:2333", `目标地址，比如 "192.168.0.1" 或 "192.168.0.1:2333" (选填)`)
 	flag.StringVar(&password, "pass", "", "密码明文，用于生成 Authorization=sha256(password) (可以不填，不填自动获取本机的密码)")
@@ -173,6 +176,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	// 签名密钥按设备随机生成：本机读不到时向目标服务器获取
+	if signKey == "" {
+		signKey, err = getSignKeyFromServer(u.Host)
+		if err != nil {
+			printJSONError("获取签名密钥失败", err)
+			os.Exit(1)
+		}
+	}
+
 	m := normalizeMethod(method)
 
 	// 签名只用 path，不包含 query
@@ -189,7 +201,7 @@ func main() {
 	}
 
 	ts := fmt.Sprintf("%d", time.Now().UnixMilli())
-	sign := makeKanoSign(m, urlPath, ts)
+	sign := makeKanoSign(m, urlPath, ts, []byte(signKey))
 
 	var body io.Reader
 	if data != "" {

@@ -43,54 +43,31 @@
 
 ### 1.2 签名计算逻辑
 
-签名的核心公式如下：
+签名为标准 HMAC-SHA256，核心公式如下：
 
 ```
-kano-sign = SHA256( SHA256(part1) + SHA256(part2) )
-```
-
-具体步骤如下：
-
-#### (1) 构造原始数据：
-
-```js
-rawData = "minikano" + HTTP_METHOD + URL_PATH + 时间戳
+rawData  = "minikano" + HTTP_METHOD + URL_PATH + 时间戳
+kano-sign = HMAC_SHA256(rawData, signKey)   // 小写 hex 输出
 ```
 
 - `HTTP_METHOD`：请求方法，如 `GET` / `POST`（全大写）
 - `URL_PATH`：请求路径（**不包含 query 参数**），如 `/api/data`
-- `时间戳`：`Date.now()`，即当前毫秒时间戳
+- `时间戳`：`Date.now()`，即当前毫秒时间戳；与服务端时间偏差超过 5 分钟会被拒绝
 - `/api/proxy/...` 例外：签名使用原始请求路径（即包含 `--目标URL` 的完整路径，仅做前导斜杠归一化）
 
-#### (2) 使用 HMAC-MD5 进行第一步加密：
+`signKey` 是按设备随机生成的 32 字节密钥（64 位十六进制串），通过白名单端点获取：
 
-```js
-hmac = HMAC_MD5(rawData, secretKey)
+```http
+GET /api/get_sign_key
 ```
 
-- 密钥固定为：
+返回：
 
-  ```js
-  "minikano_kOyXz0Ciz4V7wR0IeKmJFYFQ20jd"
-  ```
-
-#### (3) 将 HMAC 值（16 字节）二分为两部分：
-
-- `part1`：前 8 字节
-- `part2`：后 8 字节
-
-#### (4) 各部分再做 SHA256：
-
-```js
-sha1 = SHA256(part1)   // 32 字节
-sha2 = SHA256(part2)   // 32 字节
+```json
+{ "key": "<64位十六进制密钥>" }
 ```
 
-#### (5) 连接并最终 SHA256：
-
-```js
-finalHash = SHA256(sha1 + sha2)   // 小写 hex 输出
-```
+随 APK 附带的 `ufi_req` 工具在设备本机运行时直接从设备存储读取该密钥，远程使用时自动向目标服务器请求。
 
 ------
 
@@ -136,6 +113,7 @@ authorization: <SHA256(口令)的小写hex>
 | 精确匹配 | `GET /api/need_token`      | 是否启用口令认证           |
 | 精确匹配 | `GET /api/get_theme`       | 主题配置                   |
 | 精确匹配 | `GET /api/SELinux`         | SELinux 状态               |
+| 精确匹配 | `GET /api/get_sign_key`    | 获取本设备的签名密钥       |
 | 前缀匹配 | `/api/uploads`、`/api/uploads/...` | 用户上传的文件（图片、脚本等） |
 | 非api路径 | `/{任意路径}`             | 静态资源（前端页面、脚本、语言包等） |
 

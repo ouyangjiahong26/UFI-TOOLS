@@ -15,19 +15,17 @@ const originFetch = window.fetch;
 (() => {
     const of = window.fetch;
 
-    function hmacSignature(secret, data) {
-        const hmacMd5 = CryptoJS.HmacMD5(data, secret);
-        const hmacMd5Bytes = CryptoJS.enc.Hex.parse(hmacMd5.toString());
-
-        const mid = Math.floor(hmacMd5Bytes.sigBytes / 2);
-        const part1 = CryptoJS.lib.WordArray.create(hmacMd5Bytes.words.slice(0, mid / 4), mid);
-        const part2 = CryptoJS.lib.WordArray.create(hmacMd5Bytes.words.slice(mid / 4), mid);
-
-        const sha1 = CryptoJS.SHA256(part1);
-        const sha2 = CryptoJS.SHA256(part2);
-        const finalHash = CryptoJS.SHA256(sha1.concat(sha2));
-
-        return finalHash.toString(CryptoJS.enc.Hex);
+    let signKey = null;
+    const loadSignKey = async () => {
+        if (signKey) return signKey
+        try {
+            const res = await of(KANO_baseURL + '/get_sign_key')
+            const data = await res.json()
+            if (data && data.key) signKey = data.key
+        } catch (e) {
+            console.warn('获取签名密钥失败：', e)
+        }
+        return signKey
     }
 
     window.fetch = async (input, init = {}) => {
@@ -55,8 +53,9 @@ const originFetch = window.fetch;
             console.warn('无效的URL:', input);
             urlPath = input; // fallback
         }
-        // 没啥用，只是起到混淆作用
-        const signature = hmacSignature('minikano_kOyXz0Ciz4V7wR0IeKmJFYFQ20jd', 'minikano' + method + urlPath + t);
+        // 签名密钥按设备随机下发，签名把请求锁定在时间窗口内，阻止抓包重放
+        const key = await loadSignKey();
+        const signature = key ? CryptoJS.HmacSHA256('minikano' + method + urlPath + t, key).toString() : '';
 
         headers.set('kano-t', t);
         headers.set('kano-sign', signature);

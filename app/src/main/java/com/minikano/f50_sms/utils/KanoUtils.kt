@@ -54,19 +54,8 @@ class KanoUtils {
         private val SHA256_HEX_REGEX = Regex("^[a-fA-F0-9]{64}$")
         private const val HEX_CHARS = "0123456789abcdef"
 
-        fun HmacSignature(secret: String, data: String): String {
-            val hmacMd5Bytes = hmac("HmacMD5", secret, data)
-            val mid = hmacMd5Bytes.size / 2
-            val digest = MessageDigest.getInstance("SHA-256")
-
-            digest.update(hmacMd5Bytes, 0, mid)
-            val sha1 = digest.digest()
-            digest.update(hmacMd5Bytes, mid, hmacMd5Bytes.size - mid)
-            val sha2 = digest.digest()
-            digest.update(sha1)
-            digest.update(sha2)
-
-            return encodeHex(digest.digest())
+        fun hmacSha256Hex(secret: String, data: String): String {
+            return encodeHex(hmac("HmacSHA256", secret, data))
         }
 
         fun hmac(algorithm: String, key: String, data: String): ByteArray {
@@ -95,7 +84,7 @@ class KanoUtils {
             return MessageDigest.isEqual(firstHash, secondHash)
         }
 
-        private fun encodeHex(bytes: ByteArray): String {
+        fun encodeHex(bytes: ByteArray): String {
             val chars = CharArray(bytes.size * 2)
             bytes.forEachIndexed { index, byte ->
                 val value = byte.toInt() and 0xff
