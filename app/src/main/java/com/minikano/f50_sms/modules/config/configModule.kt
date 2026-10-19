@@ -14,7 +14,9 @@ import io.ktor.server.routing.post
 import org.json.JSONObject
 import androidx.core.content.edit
 import com.minikano.f50_sms.configs.AppMeta
+import com.minikano.f50_sms.modules.auth.KanoAuth
 import com.minikano.f50_sms.utils.KanoUtils
+import com.minikano.f50_sms.utils.PassHash
 
 fun Route.configModule(context: Context) {
     val TAG = "[$BASE_TAG]_configModule"
@@ -60,8 +62,10 @@ fun Route.configModule(context: Context) {
 
             val pref = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             pref.edit(commit = true) {
-                putString(PREF_LOGIN_TOKEN, KanoUtils.sha256Hex(token))
+                //客户端发送的 authorization 是 sha256(口令) 的 hex，存储对该值做加盐多轮哈希
+                putString(PREF_LOGIN_TOKEN, PassHash.hash(KanoUtils.sha256Hex(token).toCharArray(), PassHash.generateSalt()))
             }
+            KanoAuth.invalidateLoginCache()
             AppMeta.updateIsDefaultOrWeakToken(context,KanoUtils.isWeakToken(token = token))
 
             call.response.headers.append("Access-Control-Allow-Origin", "*")

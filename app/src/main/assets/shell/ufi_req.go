@@ -106,10 +106,6 @@ type Item struct {
 	Value string `xml:",chardata"`
 }
 
-func GetLoginTokenSHA256() (string, error) {
-	return readPrefValue("login_token")
-}
-
 // 远程使用时从目标服务器获取该设备的签名密钥
 func getSignKeyFromServer(hostPort string) (string, error) {
 	resp, err := http.Get("http://" + hostPort + "/api/get_sign_key")
@@ -140,13 +136,12 @@ func main() {
 		timeout  int
 	)
 
-	//获取本机sha256密码
-	tokenSHA256, _ := GetLoginTokenSHA256()
 	//获取本机签名密钥
 	signKey, _ := GetSignKey()
 
 	flag.StringVar(&host, "host", "192.168.0.1:2333", `目标地址，比如 "192.168.0.1" 或 "192.168.0.1:2333" (选填)`)
-	flag.StringVar(&password, "pass", "", "密码明文，用于生成 Authorization=sha256(password) (可以不填，不填自动获取本机的密码)")
+	// 设备存储的口令已是加盐多轮哈希，无法还原为 authorization 值，必须提供明文
+	flag.StringVar(&password, "pass", "", "密码明文，用于生成 Authorization=sha256(password) (必填)")
 	flag.StringVar(&method, "X", "GET", "HTTP 方法：GET/POST/PUT/DELETE...")
 	flag.StringVar(&endpoint, "e", "", `请求路径或完整URL，如 "/api/xxx" (必填)`)
 	flag.StringVar(&data, "d", "", `请求体(JSON字符串)。GET 一般不需要。例：'{"command":"ls"}'`)
@@ -165,7 +160,7 @@ func main() {
 	}
 	flag.Parse()
 
-	if host == "" || (password == "" && tokenSHA256 == "") || endpoint == "" {
+	if host == "" || password == "" || endpoint == "" {
 		flag.Usage()
 		os.Exit(2)
 	}
@@ -193,12 +188,7 @@ func main() {
 		urlPath = "/"
 	}
 
-	auth := ""
-	if password != "" {
-		auth = sha256Hex([]byte(password))
-	} else {
-		auth = tokenSHA256
-	}
+	auth := sha256Hex([]byte(password))
 
 	ts := fmt.Sprintf("%d", time.Now().UnixMilli())
 	sign := makeKanoSign(m, urlPath, ts, []byte(signKey))
