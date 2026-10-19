@@ -109,7 +109,7 @@ fun Route.adbModule(context: Context) {
 
             KanoLog.d(
                 TAG,
-                "接收到ADB_WIFI配置：enabled=$enabled, password=$password"
+                "接收到ADB_WIFI配置：enabled=$enabled"
             )
 
             val sharedPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -126,8 +126,6 @@ fun Route.adbModule(context: Context) {
                     putString("ADB_IP_ENABLED", "false")
                 }
             }
-
-            KanoLog.d(TAG, "ADMIN_PWD:${sharedPrefs.getString("ADMIN_PWD", "")}")
 
             // 响应
             call.response.headers.append("Access-Control-Allow-Origin", "*")

@@ -58,8 +58,6 @@ fun Route.configModule(context: Context) {
                 throw IllegalArgumentException("口令需要至少同时包含数字和字母")
             }
 
-            KanoLog.d(TAG, "接收到 token=$token")
-
             val pref = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             pref.edit(commit = true) {
                 putString(PREF_LOGIN_TOKEN, KanoUtils.sha256Hex(token))
