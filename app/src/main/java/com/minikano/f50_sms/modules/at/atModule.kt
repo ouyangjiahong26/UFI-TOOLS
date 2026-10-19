@@ -43,8 +43,9 @@ fun Route.atModule(context: Context) {
                 ?: throw Exception("复制 sendat 到 filesDir 失败")
             outFileAt.setExecutable(true)
 
-            val atCommand = "${outFileAt.absolutePath} -n $slot -c '${command.trim()}'"
-            val result = ShellKano.runShellCommand(atCommand, true)
+            val result = ShellKano.runShellArgv(
+                listOf(outFileAt.absolutePath, "-n", slot.toString(), "-c", command.trim())
+            )
                 ?: throw Exception("AT 指令没有输出")
 
             var res = result
@@ -60,7 +61,6 @@ fun Route.atModule(context: Context) {
                 res = res.removePrefix(",").trimStart()
             }
 
-            KanoLog.d(TAG, "AT_cmd：$atCommand")
             KanoLog.d(TAG, "AT_result：$res")
 
             call.respondText(

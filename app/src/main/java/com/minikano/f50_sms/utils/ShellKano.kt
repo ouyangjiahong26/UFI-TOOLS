@@ -84,6 +84,67 @@ class ShellKano {
             }
         }
 
+        /**
+         * 按 argv 直接执行命令，参数不经 shell 解析。
+         * 用户可控内容拼进 command 传给 sh -c 会被注入，必须走本方法。
+         */
+        fun runShellArgv(args: List<String>, timeoutSec: Long = 60L): String? {
+            if (args.isEmpty()) return null
+
+            val output = StringBuilder()
+            val error = StringBuilder()
+
+            return try {
+                val process = ProcessBuilder(args).start()
+
+                val reader = process.inputStream.bufferedReader()
+                val errorReader = process.errorStream.bufferedReader()
+
+                val outThread = Thread {
+                    try {
+                        reader.useLines { lines ->
+                            lines.forEach { line ->
+                                output.appendLine(line)
+                            }
+                        }
+                    } catch (_: Exception) {}
+                }
+
+                val errThread = Thread {
+                    try {
+                        errorReader.useLines { lines ->
+                            lines.forEach { line ->
+                                error.appendLine(line)
+                            }
+                        }
+                    } catch (_: Exception) {}
+                }
+
+                outThread.start()
+                errThread.start()
+
+                val finished = process.waitFor(timeoutSec, TimeUnit.SECONDS)
+
+                if (!finished) {
+                    process.destroyForcibly()
+                    return null
+                }
+
+                outThread.join()
+                errThread.join()
+
+                if (error.isNotEmpty()) {
+                    null
+                } else {
+                    output.toString().trim()
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+
         fun runShellCommand(command: String?, context: Context): String? {
             val output = StringBuilder()
             try {
