@@ -208,7 +208,6 @@ fun Route.baseDeviceInfoModule(context: Context) {
                 "boot_time":$bootDurationMs
             }
         """.trimIndent()
-        call.response.headers.append("Access-Control-Allow-Origin", "*")
         call.respondText(jsonResult, ContentType.Application.Json)
     }
 
@@ -216,11 +215,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
         try {
             val res = readNetConnCount()
             val jsonResult = """{"result":"success","data":{"tcp":"${res.tcp}","tcp_active":"${res.tcpActive}","tcp_other":"${res.tcpOther}","tcp6":"${res.tcp6}","udp":"${res.udp}","udp6":"${res.udp6}","unix":"${res.unix}"}}"""
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "获取连接信息出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取连接信息出错(SELINUX状态：${KanoUtils.getSELinuxStatus()})"}""",
                 ContentType.Application.Json,
@@ -261,12 +258,10 @@ fun Route.baseDeviceInfoModule(context: Context) {
                 }.toString()
             }
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
 
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "获取流量使用情况出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 JSONObject().apply {
                     put("error", "获取流量使用情况出错:${e.message}")
@@ -283,11 +278,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
             AppMeta.isReadUseTerms = true
             sharedPrefs.edit(commit = true) { putString("isReadUseTerms", "true") }
             val jsonResult = """{"result":"success"}""".trimIndent()
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "获取用户协议信息出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取用户协议信息出错"}""",
                 ContentType.Application.Json,
@@ -308,11 +301,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
             val sharedPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             AppMeta.setNickName(sharedPrefs,nickname)
             val jsonResult = """{"result":"success"}""".trimIndent()
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "设置昵称出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"设置昵称出错"}""",
                 ContentType.Application.Json,
@@ -334,11 +325,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
             }
         """.trimIndent()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "获取版本信息出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取版本信息出错"}""",
                 ContentType.Application.Json,
@@ -351,11 +340,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
         try {
             val jsonResult = """{"device_id": "${UniqueDeviceIDManager.getUUID()}"}""".trimIndent()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "获取设备id出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取设备id出错"}""",
                 ContentType.Application.Json,
@@ -374,11 +361,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
             }
         """.trimIndent()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "获取selinux状态出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取selinux状态出错"}""",
                 ContentType.Application.Json,
@@ -399,11 +384,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
             }
         """.trimIndent()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "获取TOKEN信息出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取TOKEN信息出错"}""",
                 ContentType.Application.Json,
@@ -423,11 +406,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
             }
         """.trimIndent()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "获取UsbDevices信息出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取UsbDevices信息出错"}""",
                 ContentType.Application.Json,
@@ -447,11 +428,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
             }
         """.trimIndent()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "获取volte_status信息出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取volte_status信息出错"}""",
                 ContentType.Application.Json,
@@ -471,11 +450,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
             }
         """.trimIndent()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "获取vonr_status信息出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取vonr_status信息出错"}""",
                 ContentType.Application.Json,
@@ -507,11 +484,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
             }
 
             val jsonResult = """{"result":"success"}""".trimIndent()
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "设置volte状态出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"设置volte状态出错"}""",
                 ContentType.Application.Json,
@@ -543,11 +518,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
             }
 
             val jsonResult = """{"result":"success"}""".trimIndent()
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "设置vonr状态出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"设置vonr状态出错"}""",
                 ContentType.Application.Json,
@@ -569,11 +542,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
             val result =  AppMeta.setWebServerCookie(ck)
             val jsonResult = """{"result":$result}""".trimIndent()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "set_cookie出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"set_cookie出错"}""",
                 ContentType.Application.Json,
@@ -586,11 +557,9 @@ fun Route.baseDeviceInfoModule(context: Context) {
     get("/api/get_cookie") {
         try {
             val jsonResult = JSONObject().put("cookie", AppMeta.webServerCookie)
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult.toString(), ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "get_cookie出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"get_cookie出错"}""",
                 ContentType.Application.Json,

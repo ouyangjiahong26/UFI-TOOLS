@@ -10,7 +10,6 @@ retry_count=0
 
 PASS_FILE="/data/data/com.minikano.f50_sms/shared_prefs/kano_ZTE_store.xml"
 SHA256_BIN="/data/data/com.minikano.f50_sms/files/sha256"
-BACKUP_PASS="Wa@9w+YWRtaW4="
 
 # Extract login_token from XML
 get_login_pass() {
@@ -45,8 +44,9 @@ while true; do
     if [ -n "$hashed_pass" ]; then
         PASS="$hashed_pass"
     else
-        PASS="$("$SHA256_BIN" "$BACKUP_PASS")"
-        echo "Warning: Password file missing or empty, using backup password." 1>&2
+        # [安全修复] 密码文件缺失时不再回退到公开的默认口令，直接拒绝登录
+        echo "Error: Password file missing or empty, login denied." 1>&2
+        exit 1
     fi
 
     input_raw_pass="$(read_password "Password: ")"

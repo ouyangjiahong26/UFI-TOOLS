@@ -140,7 +140,6 @@ fun Route.themeModule(context: Context) {
                 }
 
                 if (fileName != null) {
-                    call.response.headers.append("Access-Control-Allow-Origin", "*")
                     val fileUrl = "/uploads/$fileName"
 
                     call.respondText(
@@ -154,7 +153,6 @@ fun Route.themeModule(context: Context) {
 
             } catch (e: Exception) {
                 KanoLog.d(TAG, "上传文件出错： ${e.message}")
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(
                     """{"error":"上传文件出错: ${e.message}"}""",
                     ContentType.Application.Json,
@@ -206,7 +204,6 @@ fun Route.themeModule(context: Context) {
                 }
 
 
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(
                     """{"result":"success"}""",
                     ContentType.Application.Json,
@@ -215,7 +212,6 @@ fun Route.themeModule(context: Context) {
 
             } catch (e: Exception) {
                 KanoLog.d(TAG, "删除出错： ${e.message}")
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(
                     """{"error":"删除出错: ${e.message}"}""",
                     ContentType.Application.Json,
@@ -265,7 +261,6 @@ fun Route.themeModule(context: Context) {
 
             } catch (e: Exception) {
                 KanoLog.d(TAG, "删除出错： ${e.message}")
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(
                     """{"error":"删除出错: ${e.message}"}""",
                     ContentType.Application.Json,
@@ -302,7 +297,6 @@ fun Route.themeModule(context: Context) {
                     putString("kano_theme", jsonStore)
                 }
 
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(
                     """{"result":"success"}""",
                     ContentType.Application.Json,
@@ -311,7 +305,6 @@ fun Route.themeModule(context: Context) {
 
             } catch (e: Exception) {
                 KanoLog.d(TAG, "配置出错： ${e.message}")
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(
                     """{"error":"配置出错: ${e.message}"}""",
                     ContentType.Application.Json,
@@ -353,7 +346,6 @@ fun Route.themeModule(context: Context) {
             }
 
             val text = jsonFull.encodeToString(config)
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 text,
                 ContentType.Application.Json,
@@ -361,7 +353,6 @@ fun Route.themeModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "读取主题出错： ${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"读取主题出错"}""",
                 ContentType.Application.Json,

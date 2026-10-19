@@ -381,6 +381,16 @@ class ShellKano {
 
                     // 转换为 Document
                     val factory = DocumentBuilderFactory.newInstance()
+                    // [安全修复] XXE 防护：禁用 DOCTYPE 与外部实体
+                    try {
+                        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+                        factory.setFeature("http://xml.org/sax/features/external-general-entities", false)
+                        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+                        factory.setXIncludeAware(false)
+                        factory.isExpandEntityReferences = false
+                    } catch (se: Exception) {
+                        KanoLog.w("UFI_TOOLS_LOG", "XML 安全特性设置失败: ${se.message}")
+                    }
                     val builder = factory.newDocumentBuilder()
                     val inputStream = xmlContent.byteInputStream()
                     return builder.parse(inputStream)

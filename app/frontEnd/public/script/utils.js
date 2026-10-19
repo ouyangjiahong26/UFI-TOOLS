@@ -128,7 +128,7 @@ function kano_parseSignalBar(val, min = -125, max = -81, green_low = -90, yellow
     const progress = document.createElement('span')
     const text = document.createElement('span')
 
-    text.innerHTML = `${val}${suffix}`
+    text.textContent = `${val}${suffix}`
     bar.className = 'signal_bar'
     text.className = 'text'
     progress.className = 'signal_bar_progress'
@@ -914,6 +914,20 @@ const parseDOM = (text) => {
         // 获取除了 script 的其他内容
         let clone = doc.body.cloneNode(true);
         clone.querySelectorAll('script').forEach(el => el.remove());
+        // 移除内联事件属性与 javascript: 协议属性，防止残余 XSS
+        clone.querySelectorAll('*').forEach(el => {
+            Array.from(el.attributes).forEach(attr => {
+                const name = attr.name.toLowerCase();
+                if (name.startsWith('on')) {
+                    el.removeAttribute(attr.name);
+                } else if (name === 'href' || name === 'src') {
+                    const value = (attr.value || '').replace(/\s+/g, '').toLowerCase();
+                    if (value.startsWith('javascript:')) {
+                        el.removeAttribute(attr.name);
+                    }
+                }
+            });
+        });
         const remainingHTML = clone.innerHTML.trim();
 
         return { text: remainingHTML };
@@ -1599,4 +1613,16 @@ function escapeHtml(input) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+// 用于 innerHTML 输出的多行文本：先 HTML 转义再把换行转为 <br>
+function escapeHtmlBr(input) {
+    return escapeHtml(input).replaceAll('\n', '<br>');
+}
+
+// 用于 HTML 属性中内联 JS 字符串参数（如 onclick="fn('...')"）的转义：
+// 先做 JS 字符串转义（反斜杠与单引号），再做 HTML 属性转义
+function escapeJsHtml(input) {
+    if (input == null) return '';
+    return escapeHtml(String(input).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
 }

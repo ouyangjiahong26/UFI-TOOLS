@@ -373,8 +373,10 @@ class MainActivity : ComponentActivity() {
 
                                 if(!loginTokenInput.isBlank()){
                                     sharedPrefs.edit(commit = true) {
-                                        putString(PREF_LOGIN_TOKEN,KanoUtils.sha256Hex(loginTokenInput.ifBlank { "admin" }) )
-                                        updateIsDefaultOrWeakToken(context,KanoUtils.isWeakToken(loginTokenInput.ifBlank { "admin" }))
+                                        // [安全修复] 用户修改口令后清除随机初始口令的明文缓存
+                                        putString(PREF_LOGIN_TOKEN,KanoUtils.sha256Hex(loginTokenInput))
+                                        remove("initial_generated_token")
+                                        updateIsDefaultOrWeakToken(context,KanoUtils.isWeakToken(loginTokenInput))
                                     }
                                 }
 
@@ -562,8 +564,18 @@ fun InputUI(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
                 Spacer(modifier = Modifier.height(6.dp))
+                // [安全修复] 首次启动生成的是随机初始口令，在设备屏幕上展示以便用户登录
+                val initialCtx = LocalContext.current
+                val initialTokenHint = remember {
+                    initialCtx.getSharedPreferences(
+                        "kano_ZTE_store", android.content.Context.MODE_PRIVATE
+                    ).getString("initial_generated_token", null)
+                }
                 Text(
-                    text = "登录口令(默认admin)\nLogin Token (default: admin)",
+                    text = if (initialTokenHint != null)
+                        "初始口令(随机生成，登录后请立即修改): $initialTokenHint\nInitial token (change after first login): $initialTokenHint"
+                    else
+                        "登录口令\nLogin Token",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.fillMaxWidth()
@@ -701,7 +713,18 @@ fun ServerUI(
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(20.dp))
-                Text("点击停止服务更改网关和口令密码(默认admin)\nClick to stop the service and change the gateway and password (default: admin)",
+                // [安全修复] 展示随机初始口令（存在且未修改时），替代原"默认admin"提示
+                val initialCtx = LocalContext.current
+                val initialTokenHint = remember {
+                    initialCtx.getSharedPreferences(
+                        "kano_ZTE_store", android.content.Context.MODE_PRIVATE
+                    ).getString("initial_generated_token", null)
+                }
+                Text(
+                    if (initialTokenHint != null)
+                        "初始口令: $initialTokenHint（登录后请立即修改）\nInitial token: $initialTokenHint"
+                    else
+                        "点击停止服务更改网关和口令密码\nClick to stop the service and change the gateway and password",
                     fontSize = 10.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

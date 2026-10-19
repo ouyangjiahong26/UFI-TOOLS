@@ -21,7 +21,7 @@ import com.minikano.f50_sms.configs.AppMeta
 import com.minikano.f50_sms.modules.PREFS_NAME
 import com.minikano.f50_sms.utils.BatteryReceiver
 import com.minikano.f50_sms.utils.KanoLog
-import com.minikano.f50_sms.utils.KanoReport.Companion.reportToServer
+// [安全修复] 已移除 KanoReport 遥测 import（自建版不向作者服务器上报设备信息）
 import com.minikano.f50_sms.utils.KanoUtils
 import com.minikano.f50_sms.utils.KanoUtils.Companion.getVoLteState
 import com.minikano.f50_sms.utils.KanoUtils.Companion.isADBAutoBootUpEnabled
@@ -288,7 +288,8 @@ class ADBService : Service() {
                     rptRunning = true
                     try {
                         KanoLog.d(TAG, "周期性发送状态中...")
-                        reportToServer()
+                        // [安全修复] 自建版已移除向 api.kanokano.cn 的遥测上报 (KanoReport)
+                        KanoLog.d(TAG, "self-build: telemetry disabled")
                     } catch (e: Exception) {
                         KanoLog.e(TAG, "发送状态时发生错误：", e)
                     } finally {

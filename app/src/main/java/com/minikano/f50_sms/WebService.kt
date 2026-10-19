@@ -71,7 +71,9 @@ class WebService : Service() {
         }
 
         // 注册广播接收器
-        registerReceiver(statusReceiver, IntentFilter(UI_INTENT), Context.RECEIVER_EXPORTED)
+        // [安全修复] RECEIVER_EXPORTED -> NOT_EXPORTED：该广播仅由本 App 的 MainActivity 发送，
+        // 导出状态会让任意本机 App 广播启停 Web 服务
+        registerReceiver(statusReceiver, IntentFilter(UI_INTENT), Context.RECEIVER_NOT_EXPORTED)
         startForeground(114514, createNotification())
 
         allowAutoReStart = true

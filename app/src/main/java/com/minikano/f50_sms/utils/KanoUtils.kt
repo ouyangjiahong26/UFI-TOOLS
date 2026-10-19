@@ -384,11 +384,16 @@ class KanoUtils {
         }
 
         fun runAT(context: Context,command: String, slot:Int = 0): String{
+            // [安全修复] AT 指令在拼入单引号 shell 上下文前先做危险字符校验，防命令注入
+            val trimmedCmd = command.trim()
+            if (hasAtInjectionChars(trimmedCmd)) {
+                throw Exception("AT 指令包含非法字符（引号/美元符/反引号/反斜杠/换行）")
+            }
             val outFileAt = KanoUtils.copyFileToFilesDir(context, "shell/sendat")
                 ?: throw Exception("复制 sendat 到 filesDir 失败")
             outFileAt.setExecutable(true)
 
-            val atCommand = "${outFileAt.absolutePath} -n $slot -c '${command.trim()}'"
+            val atCommand = "${outFileAt.absolutePath} -n $slot -c '${trimmedCmd}'"
             val result = ShellKano.runShellCommand(atCommand, true)
                 ?: throw Exception("AT 指令没有输出")
             var res = result
@@ -897,6 +902,21 @@ class KanoUtils {
                 }
             }
         }
+
+        // [安全修复] 生成随机初始口令（替代固定 "admin"），8位、去除易混淆字符
+        fun generateInitialToken(length: Int = 8): String {
+            val charset = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
+            val rnd = java.security.SecureRandom()
+            return buildString {
+                repeat(length) { append(charset[rnd.nextInt(charset.length)]) }
+            }
+        }
+
+        // [安全修复] AT 指令危险字符校验：这些字符在单引号包裹的 shell 上下文中可逃逸注入
+        fun hasAtInjectionChars(cmd: String): Boolean {
+            return cmd.contains('\'') || cmd.contains('$') || cmd.contains('`') ||
+                    cmd.contains('\\') || cmd.contains('\n') || cmd.contains('\r')
+        }
         private val PREFS_NAME = "kano_ZTE_store"
         private val PREF_GATEWAY_IP = "gateway_ip"
         private val PREF_LOGIN_TOKEN = "login_token"
@@ -914,7 +934,12 @@ class KanoUtils {
             val existing = spf.all
             spf.edit(commit = true) {
                 if (!existing.containsKey(PREF_LOGIN_TOKEN)) {
-                    putString(PREF_LOGIN_TOKEN, KanoUtils.sha256Hex("admin"))
+                    // [安全修复] 首次启动不再使用固定默认口令 "admin"（局域网内任何人可猜），
+                    // 改为生成随机初始口令；明文暂存于 initial_generated_token 供设备屏幕展示，
+                    // 用户修改口令后该明文会被清除。
+                    val generated = generateInitialToken()
+                    putString(PREF_LOGIN_TOKEN, KanoUtils.sha256Hex(generated))
+                    putString("initial_generated_token", generated)
                     updateIsDefaultOrWeakToken(context,true)
                 }
                 if (!existing.containsKey(PREF_ISDEBUG)) {

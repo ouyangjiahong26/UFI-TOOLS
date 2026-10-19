@@ -74,6 +74,7 @@ function t(key, fallback = "") {
 (function initI18n() {
     createLanguageSelector();
     const savedLang = localStorage.getItem(LANG_STORAGE_KEY);
-    const langToLoad = savedLang || detectBrowserLang();
+    // 校验 savedLang 在可用语言白名单内，非法值回退默认语言
+    const langToLoad = (savedLang && AVAILABLE_LANGS[savedLang]) ? savedLang : detectBrowserLang();
     loadLanguage(langToLoad);
 })();

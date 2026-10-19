@@ -26,11 +26,9 @@ fun Route.configModule(context: Context) {
         try {
             val jsonResult = """{"is_weak_token":${AppMeta.isDefaultOrWeakToken}}""".trimIndent()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(jsonResult, ContentType.Application.Json)
         } catch (e: Exception) {
             KanoLog.d("UFI_TOOLS_LOG", "获取是否弱Token出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取是否弱Token出错"}""",
                 ContentType.Application.Json,
@@ -66,7 +64,6 @@ fun Route.configModule(context: Context) {
             }
             AppMeta.updateIsDefaultOrWeakToken(context,KanoUtils.isWeakToken(token = token))
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -74,7 +71,6 @@ fun Route.configModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "设置口令出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"${e.message ?: "未知错误"}"}""",
                 ContentType.Application.Json,
@@ -91,11 +87,9 @@ fun Route.configModule(context: Context) {
                 "res_server": "${AppMeta.GLOBAL_SERVER_URL}"
             }""".trimIndent()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(resultJson, ContentType.Application.Json, HttpStatusCode.OK)
         } catch (e: Exception) {
             KanoLog.d(TAG, "请求出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"请求出错"}""",
                 ContentType.Application.Json,
@@ -119,7 +113,6 @@ fun Route.configModule(context: Context) {
 
             AppMeta.setGlobalServerUrl(context, resServerUrl)
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -127,7 +120,6 @@ fun Route.configModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "设置resServerUrl出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"${e.message ?: "未知错误"}"}""",
                 ContentType.Application.Json,
@@ -144,11 +136,9 @@ fun Route.configModule(context: Context) {
                 "debug_log_enabled": "${AppMeta.isEnableLog}"
             }""".trimIndent()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(resultJson, ContentType.Application.Json, HttpStatusCode.OK)
         } catch (e: Exception) {
             KanoLog.d(TAG, "请求出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"请求出错"}""",
                 ContentType.Application.Json,
@@ -169,7 +159,6 @@ fun Route.configModule(context: Context) {
 
             AppMeta.setIsEnableLog(context, debugEnabled)
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -177,7 +166,6 @@ fun Route.configModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "设置debug_log_enabled出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"${e.message ?: "未知错误"}"}""",
                 ContentType.Application.Json,
@@ -198,7 +186,6 @@ fun Route.configModule(context: Context) {
 
             AppMeta.setIsEnableWakeLock(context, wakeLockEnabled)
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -206,7 +193,6 @@ fun Route.configModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "设置wakelock_enabled出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"${e.message ?: "未知错误"}"}""",
                 ContentType.Application.Json,
@@ -263,7 +249,6 @@ fun Route.configModule(context: Context) {
                 putString("kano_data_limit_status_forward_enabled",dataFlowNoticeEnabled)
             }
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -271,7 +256,6 @@ fun Route.configModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "设置 set_data_limit 出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"${e.message ?: "未知错误"}"}""",
                 ContentType.Application.Json,
@@ -292,11 +276,9 @@ fun Route.configModule(context: Context) {
                 .put("data_check_reference",AppMeta.dataFlowCheckRef)
                 .put("data_limit_status_forward_enabled",sharedPrefs.getString("kano_data_limit_status_forward_enabled","0"))
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(resultJson.toString(), ContentType.Application.Json, HttpStatusCode.OK)
         } catch (e: Exception) {
             KanoLog.d(TAG, "请求出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"请求出错"}""",
                 ContentType.Application.Json,

@@ -43,7 +43,6 @@ fun Route.pluginsModule(context: Context) {
                     putString(PLUGIN_KEY, text)
                 }
 
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(
                     """{"result":"success"}""",
                     ContentType.Application.Json,
@@ -52,7 +51,6 @@ fun Route.pluginsModule(context: Context) {
 
             } catch (e: Exception) {
                 KanoLog.d(TAG, "配置出错： ${e.message}")
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(
                     """{"error":"配置出错: ${e.message}"}""",
                     ContentType.Application.Json,
@@ -89,7 +87,6 @@ fun Route.pluginsModule(context: Context) {
                     |"res":$alistBody
                     |}""".trimMargin()
 
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 if (resultJson != null) {
                     call.respondText(resultJson, ContentType.Application.Json, HttpStatusCode.OK)
                 }else{
@@ -97,7 +94,6 @@ fun Route.pluginsModule(context: Context) {
                 }
             } catch (e: Exception) {
                 KanoLog.d(TAG, "请求出错：${e.message}")
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(
                     """{"error":"请求出错"}""",
                     ContentType.Application.Json,
@@ -115,7 +111,6 @@ fun Route.pluginsModule(context: Context) {
             val text = sharedPref.getString(PLUGIN_KEY, "") ?: ""
             val json = JSONObject(mapOf("text" to text)).toString()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 json,
                 ContentType.Application.Json,
@@ -123,7 +118,6 @@ fun Route.pluginsModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "读取自定义头部出错： ${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"读取自定义头部出错"}""",
                 ContentType.Application.Json,

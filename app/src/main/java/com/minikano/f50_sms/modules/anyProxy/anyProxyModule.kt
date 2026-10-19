@@ -15,6 +15,7 @@ import okhttp3.Headers
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.InetAddress
+import java.net.Inet6Address
 import java.net.URI
 import java.net.UnknownHostException
 import java.util.concurrent.TimeUnit
@@ -29,6 +30,9 @@ val unsafeHeaderNames = setOf(
 )
 
 private val proxyHttpClient: OkHttpClient = OkHttpClient.Builder()
+    // [安全修复] 禁止跟随重定向：防止公网 URL 302 跳转到内网地址绕过 isForbiddenHost 的 SSRF 过滤
+    .followRedirects(false)
+    .followSslRedirects(false)
     .connectTimeout(10, TimeUnit.SECONDS)
     .readTimeout(8, TimeUnit.SECONDS)
     .writeTimeout(8, TimeUnit.SECONDS)
@@ -69,7 +73,9 @@ fun isForbiddenHost(targetUrl: String): Boolean {
             address.isAnyLocalAddress || // 0.0.0.0
             address.isLoopbackAddress || // 127.0.0.1, ::1
             address.isLinkLocalAddress || // 169.254.x.x
-            address.isSiteLocalAddress // 192.168.x.x, 10.x.x.x, 172.16.x.x
+            address.isSiteLocalAddress || // 192.168.x.x, 10.x.x.x, 172.16.x.x
+            // [安全修复] 补上 IPv6 唯一本地地址 (fc00::/7) 的拦截
+            (address is Inet6Address && (address.address[0].toInt() and 0xFE) == 0xFC)
         }
     } catch (e: UnknownHostException) {
         true
@@ -148,12 +154,8 @@ fun Route.anyProxyModule(context: Context) {
                     }
                 }
 
-                val origin = call.request.header("Origin") ?: "*"
-                if (origin != "*") {
-                    call.response.headers.append("Access-Control-Allow-Origin", origin)
-                    call.response.headers.append("Access-Control-Allow-Credentials", "true")
-                    call.response.headers.append("Access-Control-Expose-Headers", "Kano-SetCk")
-                }
+                // [安全修复] 移除反射 Origin + Allow-Credentials 的组合：
+                // 任意网站可借用户浏览器跨域读取代理响应；管理界面本身同源，无需 CORS
 
                 if (responseBody != null) {
                     if (contentType?.match(ContentType.Text.Html) == true) {

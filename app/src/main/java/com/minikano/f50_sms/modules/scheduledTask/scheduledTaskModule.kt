@@ -58,7 +58,6 @@ fun Route.scheduledTaskModule(context: Context) {
 
             TaskSchedulerManager.get()?.addTask(System.currentTimeMillis() ,id, time, repeatDaily, paramsMap)
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -67,7 +66,6 @@ fun Route.scheduledTaskModule(context: Context) {
 
         } catch (e: Exception) {
             KanoLog.d(TAG, "添加任务失败：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"添加任务失败: ${e.message}"}""",
                 ContentType.Application.Json,
@@ -90,7 +88,6 @@ fun Route.scheduledTaskModule(context: Context) {
 
             TaskSchedulerManager.get()?.removeTask(id)
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"removed"}""",
                 ContentType.Application.Json,
@@ -99,7 +96,6 @@ fun Route.scheduledTaskModule(context: Context) {
 
         } catch (e: Exception) {
             KanoLog.d(TAG, "删除任务失败：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"删除任务失败: ${e.message}"}""",
                 ContentType.Application.Json,
@@ -117,11 +113,9 @@ fun Route.scheduledTaskModule(context: Context) {
             val scheduler = TaskSchedulerManager.get()
                 ?: throw IllegalStateException("任务调度器未初始化")
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
 
             scheduler.clearAllTasks()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -130,7 +124,6 @@ fun Route.scheduledTaskModule(context: Context) {
 
         } catch (e: Exception) {
             KanoLog.d("[$BASE_TAG]_pluginsModule", "清空定时任务出错: ${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"清空定时任务出错: ${e.message}"}""",
                 ContentType.Application.Json,
@@ -162,12 +155,10 @@ fun Route.scheduledTaskModule(context: Context) {
 
             val json = Json.encodeToString(result)
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(json, ContentType.Application.Json, HttpStatusCode.OK)
 
         } catch (e: Exception) {
             KanoLog.d(TAG, "获取任务列表失败：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取任务列表失败"}""",
                 ContentType.Application.Json,
@@ -182,7 +173,6 @@ fun Route.scheduledTaskModule(context: Context) {
     get("/api/get_task") {
         val id = call.request.queryParameters["id"]
         if (id.isNullOrBlank()) {
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"缺少任务ID"}""",
                 ContentType.Application.Json,
@@ -195,7 +185,6 @@ fun Route.scheduledTaskModule(context: Context) {
             val task = TaskSchedulerManager.get()?.getTask(id)
 
             if (task == null) {
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(
                     """{"error":"任务不存在"}""",
                     ContentType.Application.Json,
@@ -213,12 +202,10 @@ fun Route.scheduledTaskModule(context: Context) {
                 )
 
                 val json = Json.encodeToString(taskInfo)
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(json, ContentType.Application.Json, HttpStatusCode.OK)
             }
         } catch (e: Exception) {
             KanoLog.d(TAG, "获取任务失败：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取任务失败"}""",
                 ContentType.Application.Json,

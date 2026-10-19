@@ -46,7 +46,6 @@ fun Route.reverseProxyModule(targetServerIP: String) {
 
             // 处理 OPTIONS 请求
             if (method == "OPTIONS") {
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.response.headers.append("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
                 call.response.headers.append("Access-Control-Allow-Headers", "Content-Type, X-Requested-With")
                 call.respond(HttpStatusCode.OK)
@@ -140,7 +139,6 @@ fun Route.reverseProxyModule(targetServerIP: String) {
                     call.response.headers.append("kano-cookie", cookie)
                 }
 
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.response.headers.append("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
                 call.response.headers.append("Access-Control-Allow-Headers", "Content-Type, X-Requested-With")
 

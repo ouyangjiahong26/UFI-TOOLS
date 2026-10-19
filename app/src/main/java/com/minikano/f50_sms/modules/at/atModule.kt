@@ -39,6 +39,11 @@ fun Route.atModule(context: Context) {
                 throw Exception("解析失败，AT指令需要以 “AT” 开头")
             }
 
+            // [安全修复] AT 指令拼入单引号 shell 上下文，先校验危险字符防命令注入
+            if (KanoUtils.hasAtInjectionChars(command.trim())) {
+                throw Exception("AT 指令包含非法字符（引号/美元符/反引号/反斜杠/换行）")
+            }
+
             val outFileAt = KanoUtils.copyFileToFilesDir(context, "shell/sendat")
                 ?: throw Exception("复制 sendat 到 filesDir 失败")
             outFileAt.setExecutable(true)

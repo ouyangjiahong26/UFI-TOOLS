@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ufi_tools_sw_cache';
+const CACHE_NAME = 'ufi_tools_sw_cache_v2';
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
@@ -26,11 +26,26 @@ if ('serviceWorker' in navigator) {
         });
 
         self.addEventListener('fetch', event => {
-          event.respondWith(
-            caches.match(event.request).then(response => {
-              return response || fetch(event.request);
-            })
-          );
+          // 判断是否为导航/HTML 请求
+          const isHtmlRequest =
+            event.request.mode === 'navigate' ||
+            event.request.destination === 'document' ||
+            (event.request.headers.get('accept') || '').includes('text/html');
+          if (isHtmlRequest) {
+            // HTML/导航请求：network-first，失败回退缓存
+            event.respondWith(
+              fetch(event.request).catch(() =>
+                caches.match(event.request).then(response => response || caches.match('/index.html'))
+              )
+            );
+          } else {
+            // 其他静态资源：cache-first，维持现状
+            event.respondWith(
+              caches.match(event.request).then(response => {
+                return response || fetch(event.request);
+              })
+            );
+          }
         });
         console.log('ServiceWorker注册成功:', registration);
       })

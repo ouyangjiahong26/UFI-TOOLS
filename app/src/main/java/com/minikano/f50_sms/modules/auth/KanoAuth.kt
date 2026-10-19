@@ -68,6 +68,12 @@ object KanoAuth {
         }
 
         val clientTimestamp = timestampStr.toLongOrNull() ?: return false
+        // [安全修复] 时间戳新鲜度校验（±10分钟）：原实现无时效，签名请求可无限重放
+        val now = System.currentTimeMillis()
+        if (kotlin.math.abs(now - clientTimestamp) > 10 * 60 * 1000L) {
+            KanoLog.d("UFI_TOOLS_LOG_KanoAuth") { "时间戳过期/偏差过大，拒绝请求" }
+            return false
+        }
         //如果是反向代理，则不要进行path过滤
         val signTarget =
             if (uriForAuth == "/api/proxy" || uriForAuth.startsWith("/api/proxy/")) {

@@ -33,7 +33,6 @@ fun Route.smsModule(context: Context) {
         }
     """.trimIndent()
 
-        call.response.headers.append("Access-Control-Allow-Origin", "*")
         call.respondText(json, ContentType.Application.Json, HttpStatusCode.OK)
     }
 
@@ -86,7 +85,6 @@ fun Route.smsModule(context: Context) {
             val test_msg = SmsInfo("1145141919810", "UFI-TOOLS TEST消息", System.currentTimeMillis())
             SmsPoll.forwardByEmail(test_msg, context)
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -95,7 +93,6 @@ fun Route.smsModule(context: Context) {
 
         } catch (e: Exception) {
             KanoLog.d(TAG, "SMTP配置出错： ${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"SMTP配置出错"}""",
                 ContentType.Application.Json,
@@ -162,7 +159,6 @@ fun Route.smsModule(context: Context) {
 
             json.put("curl_text", originalCurl)
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -170,7 +166,6 @@ fun Route.smsModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "curl配置出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"curl配置出错：${e.message}"}""",
                 ContentType.Application.Json,
@@ -208,7 +203,6 @@ fun Route.smsModule(context: Context) {
                 putString("kano_sms_forward_enabled", enable)
             }
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -216,7 +210,6 @@ fun Route.smsModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "请求出错： ${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"请求出错"}""",
                 ContentType.Application.Json,
@@ -232,7 +225,6 @@ fun Route.smsModule(context: Context) {
                 context.getSharedPreferences("kano_ZTE_store", Context.MODE_PRIVATE)
             val str = sharedPrefs.getString("kano_sms_forward_enabled", "0") ?: "0"
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"enabled":"$str"}""",
                 ContentType.Application.Json,
@@ -240,7 +232,6 @@ fun Route.smsModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "请求出错： ${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"请求出错"}""",
                 ContentType.Application.Json,
@@ -262,7 +253,6 @@ fun Route.smsModule(context: Context) {
                 putString("kano_power_status_forward_enabled", enable)
             }
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -270,7 +260,6 @@ fun Route.smsModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "请求出错： ${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"请求出错"}""",
                 ContentType.Application.Json,
@@ -286,7 +275,6 @@ fun Route.smsModule(context: Context) {
                 context.getSharedPreferences("kano_ZTE_store", Context.MODE_PRIVATE)
             val str = sharedPrefs.getString("kano_power_status_forward_enabled", "0") ?: "0"
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"enabled":"$str"}""",
                 ContentType.Application.Json,
@@ -294,7 +282,6 @@ fun Route.smsModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "请求出错： ${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"请求出错"}""",
                 ContentType.Application.Json,
@@ -327,7 +314,6 @@ fun Route.smsModule(context: Context) {
                 putString("kano_sms_forward_blacklist_keywords", keywords)
             }
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -335,7 +321,6 @@ fun Route.smsModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "请求出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"请求出错"}""",
                 ContentType.Application.Json,
@@ -357,7 +342,6 @@ fun Route.smsModule(context: Context) {
                 put("phone", phone)
             }
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 json.toString(),
                 ContentType.Application.Json,
@@ -365,7 +349,6 @@ fun Route.smsModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "请求出错： ${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"请求出错"}""",
                 ContentType.Application.Json,
@@ -405,7 +388,6 @@ fun Route.smsModule(context: Context) {
                 SmsInfo("1145141919810", "UFI-TOOLS TEST消息", System.currentTimeMillis())
             SmsPoll.forwardSmsByDingTalk(test_msg, context)
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -413,7 +395,6 @@ fun Route.smsModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "钉钉配置出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"钉钉配置出错：${e.message}"}""",
                 ContentType.Application.Json,
@@ -439,7 +420,6 @@ fun Route.smsModule(context: Context) {
         }
     """.trimIndent()
 
-        call.response.headers.append("Access-Control-Allow-Origin", "*")
         call.respondText(json, ContentType.Application.Json, HttpStatusCode.OK)
     }
 
@@ -475,7 +455,6 @@ fun Route.smsModule(context: Context) {
 
             KanoLog.d(TAG, "主动触发短信转发API：$sms,渠道：$forwardMethod")
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json,
@@ -483,7 +462,6 @@ fun Route.smsModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "主动触发短信转发出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"主动触发短信转发出错：${e.message}"}""",
                 ContentType.Application.Json,

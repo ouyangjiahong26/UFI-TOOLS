@@ -2,6 +2,7 @@ package com.minikano.f50_sms.modules.advanced
 
 import android.content.Context
 import com.minikano.f50_sms.ADBService.Companion.adbIsReady
+import com.minikano.f50_sms.configs.AppMeta
 import com.minikano.f50_sms.configs.SMBConfig
 import com.minikano.f50_sms.modules.BASE_TAG
 import com.minikano.f50_sms.utils.KanoLog
@@ -181,13 +182,17 @@ fun Route.advancedToolsModule(context: Context, targetServerIP: String) {
             val port =
                 params["port"] ?: throw IllegalArgumentException("query 缺少 port 参数")
 
+            // [安全修复] port 必须是数字且在合法范围：
+            // 原实现直接拼 URL，port 传 "1234@evil.com/" 之类可把请求指向任意主机（SSRF）
+            val portNum = port.toIntOrNull() ?: throw IllegalArgumentException("port 必须是数字")
+            if (portNum !in 1..65535) throw IllegalArgumentException("port 超出合法范围")
+
             val host = targetServerIP.substringBefore(":")
-            val fullUrl = "http://$host:$port"
+            val fullUrl = "http://$host:$portNum"
             val code = KanoUtils.getStatusCode(fullUrl)
 
             KanoLog.d(TAG, "TTYD获取ip+port信息： $host:$port 返回code:$code")
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"code":"$code","ip":"$host:$port"}""",
                 ContentType.Application.Json,
@@ -195,7 +200,6 @@ fun Route.advancedToolsModule(context: Context, targetServerIP: String) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "获取TTYD信息出错： ${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"获取TTYD信息出错:${e.message}"}""",
                 ContentType.Application.Json,
@@ -229,7 +233,6 @@ fun Route.advancedToolsModule(context: Context, targetServerIP: String) {
 
                 val parsedResult = Json.encodeToString(result)
 
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(
                     """{"result":$parsedResult}""",
                     ContentType.Application.Json,
@@ -242,7 +245,6 @@ fun Route.advancedToolsModule(context: Context, targetServerIP: String) {
 
         } catch (e: Exception) {
             KanoLog.d(TAG, "shell执行出错： ${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":${JSONObject.quote("shell执行出错: ${e.message}")}}""",
                 ContentType.Application.Json,
@@ -253,6 +255,15 @@ fun Route.advancedToolsModule(context: Context, targetServerIP: String) {
 
     //一键Shell
     get("/api/one_click_shell") {
+        // [安全修复] 弱/初始口令状态下禁用（该功能以特权执行脚本）
+        if (AppMeta.isDefaultOrWeakToken) {
+            call.respondText(
+                """{"error":"当前仍使用初始/弱口令，请先修改口令后再使用一键Shell"}""",
+                ContentType.Application.Json,
+                HttpStatusCode.Forbidden
+            )
+            return@get
+        }
         val pipedInput = PipedInputStream()
         val pipedOutput = PipedOutputStream(pipedInput)
 
@@ -359,7 +370,6 @@ fun Route.advancedToolsModule(context: Context, targetServerIP: String) {
             }
         }
 
-        call.response.headers.append("Access-Control-Allow-Origin", "*")
         call.respondOutputStream(
             contentType = ContentType.Application.Json,
             status = HttpStatusCode.OK
@@ -371,6 +381,17 @@ fun Route.advancedToolsModule(context: Context, targetServerIP: String) {
     //rootShell执行
     post("/api/root_shell") {
         try {
+            // [安全修复] 弱/初始口令状态下禁止 root 命令执行：
+            // 原实现配合默认口令 admin 等于"局域网内任何人一键 root"
+            if (AppMeta.isDefaultOrWeakToken) {
+                call.respondText(
+                    """{"error":"当前仍使用初始/弱口令，请先在设置中修改口令后再使用 root 命令执行"}""",
+                    ContentType.Application.Json,
+                    HttpStatusCode.Forbidden
+                )
+                return@post
+            }
+
             val body = call.receiveText()
 
             val json = try {
@@ -410,7 +431,6 @@ fun Route.advancedToolsModule(context: Context, targetServerIP: String) {
 
                 val parsedResult = Json.encodeToString(result)
 
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.respondText(
                     """{"result":$parsedResult}""",
                     ContentType.Application.Json,
@@ -423,7 +443,6 @@ fun Route.advancedToolsModule(context: Context, targetServerIP: String) {
 
         } catch (e: Exception) {
             KanoLog.d(TAG, "shell执行出错： ${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"shell执行出错: ${e.message}"}""",
                 ContentType.Application.Json,

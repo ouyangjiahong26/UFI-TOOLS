@@ -12,11 +12,22 @@ class KanoCURL(private val context: Context) {
         private val sender = ThreadPoolExecutor(0, 1, 30L, TimeUnit.SECONDS, LinkedBlockingQueue())
     }
 
-    fun send(command:String) {
+    // [安全修复] 新增 rawReplacements：占位符在 shell 分词之后再替换，
+    // 保证短信正文/发件人等内容始终作为"单个参数"传给 curl，无法注入 -o/--upload-file 等
+    fun send(command: String, rawReplacements: Map<String, String> = emptyMap()) {
         sender.execute {
             try {
                 KanoLog.w("UFI_TOOLS_LOG_Curl", "正在执行curl命令:$command")
-                val args = KanoUtils.parseShellArgs(command.replaceFirst("curl", ""))
+                var args = KanoUtils.parseShellArgs(command.replaceFirst("curl", ""))
+                if (rawReplacements.isNotEmpty()) {
+                    args = args.map { arg ->
+                        var a = arg
+                        for ((k, v) in rawReplacements) {
+                            a = a.replace(k, v)
+                        }
+                        a.replace("\u0000", "") // argv 中不允许 NUL
+                    }
+                }
                 val result = ShellKano.executeShellFromAssetsSubfolderWithArgs(
                     context,
                     "shell/curl",

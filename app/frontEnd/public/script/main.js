@@ -804,7 +804,7 @@ function main_func() {
                 }).join('')
                 const contentEl = document.createElement('p')
                 contentEl.innerText = escapeHtml(decodeBase64(item.content))
-                return `<li class="sms-item" data-sms-id="${item.id}" data-sms-phone="${item.number}" data-sms-content="${item.content}" style="${item.tag == '3' ? 'background-color:#ffc0cb1f;margin-right:15px' : item.tag != '2' ? 'background-color:#0880001f;margin-left:15px' : 'background-color:#ffc0cb1f;margin-right:15px'}">
+                return `<li class="sms-item" data-sms-id="${item.id}" data-sms-phone="${escapeHtml(item.number)}" data-sms-content="${item.content}" style="${item.tag == '3' ? 'background-color:#ffc0cb1f;margin-right:15px' : item.tag != '2' ? 'background-color:#0880001f;margin-left:15px' : 'background-color:#ffc0cb1f;margin-right:15px'}">
                                         <div class="arrow" style="${item.tag == '3' ? 'right:-30px;border-color: transparent transparent transparent #ffc0cb1f' : item.tag == '2' ? 'right:-30px;border-color: transparent transparent transparent #ffc0cb1f' : 'left:-30px;border-color: transparent #0880001f transparent transparent'}"></div>
                                         ${item.tag == "3" ? `<svg fill="var(--dark-text-color)" stroke="currentColor"  onclick="deleteAndReSendSms(${item.id})" class="icon" style="position: absolute;right: 50px;top: 18px;" width="14px" height="14px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg">
                 <path d="M815.36 184.96V128a36.48 36.48 0 0 1 10.24-26.88 37.76 37.76 0 0 1 52.48 0 40.96 40.96 0 0 1 11.52 26.88v172.16a40.32 40.32 0 0 1-37.12 37.12h-173.44a40.32 40.32 0 0 1-26.88-11.52 37.76 37.76 0 0 1 0-52.48 35.84 35.84 0 0 1 26.88-10.24h108.8a372.48 372.48 0 0 0-453.12-75.52A367.36 367.36 0 0 0 170.24 364.8a374.4 374.4 0 0 0-19.84 242.56 369.92 369.92 0 0 0 132.48 202.24A375.04 375.04 0 0 0 512 888.32a368.64 368.64 0 0 0 263.68-108.8A376.32 376.32 0 0 0 885.12 512H960A448 448 0 1 1 136.32 270.08a438.4 438.4 0 0 1 192-164.48 444.16 444.16 0 0 1 256-32 455.68 455.68 0 0 1 230.4 111.36z"></path>
@@ -813,7 +813,7 @@ function main_func() {
                                             <span id="message${item.id}" style="color: red;position: absolute;width: 100px;top: 2px;right: 30px;background: var(--dark-tag-color-active);display: none;text-align: center;padding: 4px;border-radius: 8px;backdrop-filter: blur(var(--blur-rate));">确定要删除吗？</span>
                                             <svg fill="var(--dark-text-color)" stroke="currentColor"  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" t="1742373390977" class="icon" viewBox="0 0 1024 1024" version="1.1" p-id="2837" width="16" height="16"><path d="M848 144H608V96a48 48 0 0 0-48-48h-96a48 48 0 0 0-48 48v48H176a48 48 0 0 0-48 48v48h768v-48a48 48 0 0 0-48-48zM176 928a48 48 0 0 0 48 48h576a48 48 0 0 0 48-48V288H176v640z m480-496a48 48 0 1 1 96 0v400a48 48 0 1 1-96 0V432z m-192 0a48 48 0 1 1 96 0v400a48 48 0 1 1-96 0V432z m-192 0a48 48 0 1 1 96 0v400a48 48 0 1 1-96 0V432z" p-id="2838"/></svg>
                                         </div>
-                                        <p style="color:#adadad;font-size:16px;margin:4px 0">${item.number}${item.tag == '3' ? ` <span style="font-size:.7rem;color:red">(${t("toast_sms_send_failed")})</span>` : ""}</p>
+                                        <p style="color:#adadad;font-size:16px;margin:4px 0">${escapeHtml(item.number)}${item.tag == '3' ? ` <span style="font-size:.7rem;color:red">(${t("toast_sms_send_failed")})</span>` : ""}</p>
                                         <p>${contentEl.innerText}</p>
                                         <p style="text-align:right;color:#adadad;margin-top:4px">${date}</p>
                                     </li > `
@@ -1016,8 +1016,8 @@ function main_func() {
             } catch { }
 
             let statusHtml_base = {
-                QORS_MESSAGE: `${notNullOrundefinedOrIsShow(res, "QORS_MESSAGE") ? `<strong onclick="copyText(event)"  class="green">${QORS_MESSAGE}</strong>` : ''}`,
-                network_type: `${notNullOrundefinedOrIsShow(res, 'network_type') ? `<strong onclick="copyText(event)"  class="green">${t('network_status')}：${res.network_provider} ${res.network_type == '20' ? '5G' : res.network_type == '13' ? '4G' : res.network_type}</strong>` : ''}`,
+                QORS_MESSAGE: `${notNullOrundefinedOrIsShow(res, "QORS_MESSAGE") ? `<strong onclick="copyText(event)"  class="green">${escapeHtml(QORS_MESSAGE)}</strong>` : ''}`,
+                network_type: `${notNullOrundefinedOrIsShow(res, 'network_type') ? `<strong onclick="copyText(event)"  class="green">${t('network_status')}：${escapeHtml(res.network_provider)} ${res.network_type == '20' ? '5G' : res.network_type == '13' ? '4G' : escapeHtml(res.network_type)}</strong>` : ''}`,
                 wifi_access_sta_num: `${notNullOrundefinedOrIsShow(res, 'wifi_access_sta_num') ? `<strong onclick="copyText(event)"  class="blue">${t('wifi_client_num')}：${res.wifi_access_sta_num}</strong>` : ''}`,
                 battery: `${notNullOrundefinedOrIsShow(res, 'battery') && (res.battery_value != '' || res.battery_vol_percent != '') ? `<strong onclick="copyText(event)"  class="green">${res.battery_charging == "1" ? `${t('charging')}` : `${t('battery_level')}`}：${kano_parseSignalBar(res.battery, 1, 100, 50, 10, undefined, " %")}</strong>` : ''}`,
                 rssi: `${notNullOrundefinedOrIsShow(res, 'rssi') || notNullOrundefinedOrIsShow(res, 'network_signalbar', true) ? `<strong onclick="copyText(event)"  class="green">${t('rssi')}：${kano_getSignalEmoji(notNullOrundefinedOrIsShow(res, 'rssi') ? res.rssi : res.network_signalbar)}</strong>` : ''}`,
@@ -2591,16 +2591,17 @@ function main_func() {
 
             if (station_list && station_list.length) {
                 conn_client_html += station_list.map(({ hostname, ip_addr, mac_addr }) => {
-                    let hostname_show = escapeHtml(hostname)
+                    let hostname_raw = hostname
                     if (devices) {
-                        hostname_show = devices.find(i => i.mac == mac_addr)?.hostname || hostname
+                        hostname_raw = devices.find(i => i.mac == mac_addr)?.hostname || hostname
                     }
+                    const hostname_show = escapeHtml(hostname_raw)
                     return `
             <div class="card-item" style="display: flex;width: 100%;margin: 10px 0;overflow: auto;">
                 <div style="margin-right: 10px;">
                     <p>
                         <span>${t('client_mgmt_hostname')}：</span><span onclick="copyText(event)">${hostname_show}</span>
-                        <svg onclick="editHostName('${hostname_show}','${mac_addr}')" class="svg-icon" style="margin-left:10px" fill="var(--dark-text-color)" stroke="currentColor" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width=".8rem" height=".8rem"><path d="M568.888889 28.444444v113.777778H142.222222v739.555556h739.555556V455.111111h113.777778v455.111111a85.333333 85.333333 0 0 1-85.333334 85.333334H113.777778A85.333333 85.333333 0 0 1 28.444444 910.222222V113.777778A85.333333 85.333333 0 0 1 113.777778 28.444444h455.111111z" p-id="5380"></path><path d="M881.777778 398.222222m11.377778 0l91.022222 0q11.377778 0 11.377778 11.377778l0 91.022222q0 11.377778-11.377778 11.377778l-91.022222 0q-11.377778 0-11.377778-11.377778l0-91.022222q0-11.377778 11.377778-11.377778Z" p-id="5381"></path><path d="M475.192889 656.327111l-102.286222-4.209778-5.973334-103.537777 346.851556-347.591112a11.377778 11.377778 0 0 1 16.099555-0.056888l92.16 91.591111a11.377778 11.377778 0 0 1 0 16.156444l-346.851555 347.591111zM876.202667 238.762667l-92.16-91.648a11.377778 11.377778 0 0 1 0-16.156445L879.104 36.408889a11.377778 11.377778 0 0 1 16.042667 0l92.16 91.704889a11.377778 11.377778 0 0 1 0 16.099555l-95.004445 94.549334a11.377778 11.377778 0 0 1-16.099555 0z" p-id="5382"></path><path d="M512 28.444444m11.377778 0l91.022222 0q11.377778 0 11.377778 11.377778l0 91.022222q0 11.377778-11.377778 11.377778l-91.022222 0q-11.377778 0-11.377778-11.377778l0-91.022222q0-11.377778 11.377778-11.377778Z" p-id="5383"></path></svg>
+                        <svg onclick="editHostName('${escapeJsHtml(hostname_raw)}','${mac_addr}')" class="svg-icon" style="margin-left:10px" fill="var(--dark-text-color)" stroke="currentColor" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width=".8rem" height=".8rem"><path d="M568.888889 28.444444v113.777778H142.222222v739.555556h739.555556V455.111111h113.777778v455.111111a85.333333 85.333333 0 0 1-85.333334 85.333334H113.777778A85.333333 85.333333 0 0 1 28.444444 910.222222V113.777778A85.333333 85.333333 0 0 1 113.777778 28.444444h455.111111z" p-id="5380"></path><path d="M881.777778 398.222222m11.377778 0l91.022222 0q11.377778 0 11.377778 11.377778l0 91.022222q0 11.377778-11.377778 11.377778l-91.022222 0q-11.377778 0-11.377778-11.377778l0-91.022222q0-11.377778 11.377778-11.377778Z" p-id="5381"></path><path d="M475.192889 656.327111l-102.286222-4.209778-5.973334-103.537777 346.851556-347.591112a11.377778 11.377778 0 0 1 16.099555-0.056888l92.16 91.591111a11.377778 11.377778 0 0 1 0 16.156444l-346.851555 347.591111zM876.202667 238.762667l-92.16-91.648a11.377778 11.377778 0 0 1 0-16.156445L879.104 36.408889a11.377778 11.377778 0 0 1 16.042667 0l92.16 91.704889a11.377778 11.377778 0 0 1 0 16.099555l-95.004445 94.549334a11.377778 11.377778 0 0 1-16.099555 0z" p-id="5382"></path><path d="M512 28.444444m11.377778 0l91.022222 0q11.377778 0 11.377778 11.377778l0 91.022222q0 11.377778-11.377778 11.377778l-91.022222 0q-11.377778 0-11.377778-11.377778l0-91.022222q0-11.377778 11.377778-11.377778Z" p-id="5383"></path></svg>
                     </p>
                     <p><span>${t('client_mgmt_mac')}：</span><span onclick="copyText(event)">${mac_addr}</span></p>
                     <p><span>${t('client_mgmt_ip')}：</span><span onclick="copyText(event)">${ip_addr}</span></p>
@@ -2608,7 +2609,7 @@ function main_func() {
                 </div>
                 <div style="flex:1;text-align: right;">
                     <button class="btn" style="padding: 20px 4px;" 
-                        onclick="setOrRemoveDeviceFromBlackList('${[mac_addr, ...blackMacList].join(';')}','${[escapeHtml(hostname), ...blackNameList].join(';')}','${AclMode}')">
+                        onclick="setOrRemoveDeviceFromBlackList('${[mac_addr, ...blackMacList].map(escapeJsHtml).join(';')}','${[hostname, ...blackNameList].map(escapeJsHtml).join(';')}','${AclMode}')">
                         🚫 ${t('client_mgmt_block')}
                     </button>
                 </div>
@@ -2617,16 +2618,17 @@ function main_func() {
 
             if (lan_station_list && lan_station_list.length) {
                 conn_client_html += lan_station_list.map(({ hostname, ip_addr, mac_addr }) => {
-                    let hostname_show = escapeHtml(hostname)
+                    let hostname_raw = hostname
                     if (devices) {
-                        hostname_show = devices.find(i => i.mac == mac_addr)?.hostname || hostname
+                        hostname_raw = devices.find(i => i.mac == mac_addr)?.hostname || hostname
                     }
+                    const hostname_show = escapeHtml(hostname_raw)
                     return `
             <div class="card-item" style="display: flex;width: 100%;margin: 10px 0;overflow: auto;">
                 <div style="margin-right: 10px;">
                     <p>
                         <span>${t('client_mgmt_hostname')}：</span><span onclick="copyText(event)">${hostname_show}</span>
-                        <svg onclick="editHostName('${hostname_show}','${mac_addr}')" class="svg-icon" style="margin-left:10px" fill="var(--dark-text-color)" stroke="currentColor" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width=".8rem" height=".8rem"><path d="M568.888889 28.444444v113.777778H142.222222v739.555556h739.555556V455.111111h113.777778v455.111111a85.333333 85.333333 0 0 1-85.333334 85.333334H113.777778A85.333333 85.333333 0 0 1 28.444444 910.222222V113.777778A85.333333 85.333333 0 0 1 113.777778 28.444444h455.111111z" p-id="5380"></path><path d="M881.777778 398.222222m11.377778 0l91.022222 0q11.377778 0 11.377778 11.377778l0 91.022222q0 11.377778-11.377778 11.377778l-91.022222 0q-11.377778 0-11.377778-11.377778l0-91.022222q0-11.377778 11.377778-11.377778Z" p-id="5381"></path><path d="M475.192889 656.327111l-102.286222-4.209778-5.973334-103.537777 346.851556-347.591112a11.377778 11.377778 0 0 1 16.099555-0.056888l92.16 91.591111a11.377778 11.377778 0 0 1 0 16.156444l-346.851555 347.591111zM876.202667 238.762667l-92.16-91.648a11.377778 11.377778 0 0 1 0-16.156445L879.104 36.408889a11.377778 11.377778 0 0 1 16.042667 0l92.16 91.704889a11.377778 11.377778 0 0 1 0 16.099555l-95.004445 94.549334a11.377778 11.377778 0 0 1-16.099555 0z" p-id="5382"></path><path d="M512 28.444444m11.377778 0l91.022222 0q11.377778 0 11.377778 11.377778l0 91.022222q0 11.377778-11.377778 11.377778l-91.022222 0q-11.377778 0-11.377778-11.377778l0-91.022222q0-11.377778 11.377778-11.377778Z" p-id="5383"></path></svg>
+                        <svg onclick="editHostName('${escapeJsHtml(hostname_raw)}','${mac_addr}')" class="svg-icon" style="margin-left:10px" fill="var(--dark-text-color)" stroke="currentColor" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width=".8rem" height=".8rem"><path d="M568.888889 28.444444v113.777778H142.222222v739.555556h739.555556V455.111111h113.777778v455.111111a85.333333 85.333333 0 0 1-85.333334 85.333334H113.777778A85.333333 85.333333 0 0 1 28.444444 910.222222V113.777778A85.333333 85.333333 0 0 1 113.777778 28.444444h455.111111z" p-id="5380"></path><path d="M881.777778 398.222222m11.377778 0l91.022222 0q11.377778 0 11.377778 11.377778l0 91.022222q0 11.377778-11.377778 11.377778l-91.022222 0q-11.377778 0-11.377778-11.377778l0-91.022222q0-11.377778 11.377778-11.377778Z" p-id="5381"></path><path d="M475.192889 656.327111l-102.286222-4.209778-5.973334-103.537777 346.851556-347.591112a11.377778 11.377778 0 0 1 16.099555-0.056888l92.16 91.591111a11.377778 11.377778 0 0 1 0 16.156444l-346.851555 347.591111zM876.202667 238.762667l-92.16-91.648a11.377778 11.377778 0 0 1 0-16.156445L879.104 36.408889a11.377778 11.377778 0 0 1 16.042667 0l92.16 91.704889a11.377778 11.377778 0 0 1 0 16.099555l-95.004445 94.549334a11.377778 11.377778 0 0 1-16.099555 0z" p-id="5382"></path><path d="M512 28.444444m11.377778 0l91.022222 0q11.377778 0 11.377778 11.377778l0 91.022222q0 11.377778-11.377778 11.377778l-91.022222 0q-11.377778 0-11.377778-11.377778l0-91.022222q0-11.377778 11.377778-11.377778Z" p-id="5383"></path></svg>
                     </p>
                     <p><span>${t('client_mgmt_mac')}：</span><span onclick="copyText(event)">${mac_addr}</span></p>
                     <p><span>${t('client_mgmt_ip')}：</span><span onclick="copyText(event)">${ip_addr}</span></p>
@@ -2634,7 +2636,7 @@ function main_func() {
                 </div>
                 <div style="flex:1;text-align: right;">
                     <button class="btn" style="padding: 20px 4px;" 
-                        onclick="setOrRemoveDeviceFromBlackList('${[mac_addr, ...blackMacList].join(';')}','${[escapeHtml(hostname), ...blackNameList].join(';')}','${AclMode}')">
+                        onclick="setOrRemoveDeviceFromBlackList('${[mac_addr, ...blackMacList].map(escapeJsHtml).join(';')}','${[hostname, ...blackNameList].map(escapeJsHtml).join(';')}','${AclMode}')">
                         🚫 ${t('client_mgmt_block')}
                     </button>
                 </div>
@@ -2644,15 +2646,16 @@ function main_func() {
             if (blackMacList.length && blackNameList.length) {
                 black_list_html += blackMacList.map((item, index) => {
                     if (item) {
-                        let params = `'${blackMacList.filter(i => item != i).join(';')}',` +
-                            `'${blackMacList.filter(i => blackNameList[index] != i).join(';')}',` +
+                        const bn = blackNameList[index] ? escapeHtml(blackNameList[index]) : ''
+                        let params = `'${blackMacList.filter(i => item != i).map(escapeJsHtml).join(';')}',` +
+                            `'${blackMacList.filter(i => blackNameList[index] != i).map(escapeJsHtml).join(';')}',` +
                             `'${AclMode}'`
                         return `
                     <div class="card-item" style="display: flex;width: 100%;margin: 10px 0;overflow: auto;">
                         <div style="margin-right: 10px;">
                             <p>
-                                <span>${t('client_mgmt_hostname')}：</span><span onclick="copyText(event)">${blackNameList[index] ? blackNameList[index] : t('client_mgmt_unknown')}</span>
-                                <svg onclick="editHostName('${blackNameList[index] || ''}','${item}')" class="svg-icon" style="margin-left:10px" fill="var(--dark-text-color)" stroke="currentColor" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width=".8rem" height=".8rem"><path d="M568.888889 28.444444v113.777778H142.222222v739.555556h739.555556V455.111111h113.777778v455.111111a85.333333 85.333333 0 0 1-85.333334 85.333334H113.777778A85.333333 85.333333 0 0 1 28.444444 910.222222V113.777778A85.333333 85.333333 0 0 1 113.777778 28.444444h455.111111z" p-id="5380"></path><path d="M881.777778 398.222222m11.377778 0l91.022222 0q11.377778 0 11.377778 11.377778l0 91.022222q0 11.377778-11.377778 11.377778l-91.022222 0q-11.377778 0-11.377778-11.377778l0-91.022222q0-11.377778 11.377778-11.377778Z" p-id="5381"></path><path d="M475.192889 656.327111l-102.286222-4.209778-5.973334-103.537777 346.851556-347.591112a11.377778 11.377778 0 0 1 16.099555-0.056888l92.16 91.591111a11.377778 11.377778 0 0 1 0 16.156444l-346.851555 347.591111zM876.202667 238.762667l-92.16-91.648a11.377778 11.377778 0 0 1 0-16.156445L879.104 36.408889a11.377778 11.377778 0 0 1 16.042667 0l92.16 91.704889a11.377778 11.377778 0 0 1 0 16.099555l-95.004445 94.549334a11.377778 11.377778 0 0 1-16.099555 0z" p-id="5382"></path><path d="M512 28.444444m11.377778 0l91.022222 0q11.377778 0 11.377778 11.377778l0 91.022222q0 11.377778-11.377778 11.377778l-91.022222 0q-11.377778 0-11.377778-11.377778l0-91.022222q0-11.377778 11.377778-11.377778Z" p-id="5383"></path></svg>
+                                <span>${t('client_mgmt_hostname')}：</span><span onclick="copyText(event)">${bn ? bn : t('client_mgmt_unknown')}</span>
+                                <svg onclick="editHostName('${escapeJsHtml(blackNameList[index] || '')}','${item}')" class="svg-icon" style="margin-left:10px" fill="var(--dark-text-color)" stroke="currentColor" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width=".8rem" height=".8rem"><path d="M568.888889 28.444444v113.777778H142.222222v739.555556h739.555556V455.111111h113.777778v455.111111a85.333333 85.333333 0 0 1-85.333334 85.333334H113.777778A85.333333 85.333333 0 0 1 28.444444 910.222222V113.777778A85.333333 85.333333 0 0 1 113.777778 28.444444h455.111111z" p-id="5380"></path><path d="M881.777778 398.222222m11.377778 0l91.022222 0q11.377778 0 11.377778 11.377778l0 91.022222q0 11.377778-11.377778 11.377778l-91.022222 0q-11.377778 0-11.377778-11.377778l0-91.022222q0-11.377778 11.377778-11.377778Z" p-id="5381"></path><path d="M475.192889 656.327111l-102.286222-4.209778-5.973334-103.537777 346.851556-347.591112a11.377778 11.377778 0 0 1 16.099555-0.056888l92.16 91.591111a11.377778 11.377778 0 0 1 0 16.156444l-346.851555 347.591111zM876.202667 238.762667l-92.16-91.648a11.377778 11.377778 0 0 1 0-16.156445L879.104 36.408889a11.377778 11.377778 0 0 1 16.042667 0l92.16 91.704889a11.377778 11.377778 0 0 1 0 16.099555l-95.004445 94.549334a11.377778 11.377778 0 0 1-16.099555 0z" p-id="5382"></path><path d="M512 28.444444m11.377778 0l91.022222 0q11.377778 0 11.377778 11.377778l0 91.022222q0 11.377778-11.377778 11.377778l-91.022222 0q-11.377778 0-11.377778-11.377778l0-91.022222q0-11.377778 11.377778-11.377778Z" p-id="5383"></path></svg>
                             </p>
                             <p><span>${t('client_mgmt_mac')}：</span><span onclick="copyText(event)">${item}</span></p>
                         </div>
@@ -2682,7 +2685,7 @@ function main_func() {
                 <div style="pointer-events:all;width:80vw;max-width:300px;">
                 <div class="title" style="margin:0" data-i18n="please_input_hostname">${t('please_input_hostname')}</div>
                 <input class="user_select_none" type="text" style="border: none;padding:6px;width:100%;margin-top:10px" disabled value="MAC: ${mac}"></input>
-                <input type="text" id="KANO_CONN_HOSTNAME" style="padding:6px;width:100%;margin:10px 0" data-i18n-placeholder="hostname" placeholder="${t("hostname")}" value="${name}"></input>
+                <input type="text" id="KANO_CONN_HOSTNAME" style="padding:6px;width:100%;margin:10px 0" data-i18n-placeholder="hostname" placeholder="${t("hostname")}" value="${escapeHtml(name)}"></input>
                 <div style="display:flex;gap:10px">
                     <button id="close_kano_edit_hostname_toast_btn" style="width:100%;font-size:.64rem;margin-top:5px" data-i18n="confirm_btn">${t("confirm_btn")}</button>
                     <button id="close_kano_edit_hostname_toast_btn1" style="width:100%;font-size:.64rem;margin-top:5px" data-i18n="cancel_btn">${t("cancel_btn")}</button>
@@ -2806,14 +2809,14 @@ function main_func() {
         try {
             const { app_ver, model, nickname } = await (await fetch(`${KANO_baseURL}/version_info`, { headers: common_headers })).json()
             if (model == nickname) {
-                MODEL.innerHTML = `${model}`
-                document.querySelector('#TITLE').innerHTML = `[${model}]UFI-TOOLS v${app_ver}`
+                MODEL.innerHTML = `${escapeHtml(model)}`
+                document.querySelector('#TITLE').innerHTML = `[${escapeHtml(model)}]UFI-TOOLS v${escapeHtml(app_ver)}`
 
             } else {
-                MODEL.innerHTML = `${model} (${nickname})`
-                document.querySelector('#TITLE').innerHTML = `[${nickname}]UFI-TOOLS v${app_ver}`
+                MODEL.innerHTML = `${escapeHtml(model)} (${escapeHtml(nickname)})`
+                document.querySelector('#TITLE').innerHTML = `[${escapeHtml(nickname)}]UFI-TOOLS v${escapeHtml(app_ver)}`
             }
-            document.querySelector('#MAIN_TITLE').innerHTML = `UFI-TOOLS <span style="font-size:.8rem">v${app_ver}</span>`
+            document.querySelector('#MAIN_TITLE').innerHTML = `UFI-TOOLS <span style="font-size:.8rem">v${escapeHtml(app_ver)}</span>`
         } catch {/*没有，不处理*/ }
     }
     loadTitle()
@@ -3312,7 +3315,7 @@ function main_func() {
                 highRailModeBtn.dataset.enabled = '0'
                 if (res) {
                     if (res.error) {
-                        AT_RESULT.innerHTML = `<p style="overflow: hidden;">${res.error}</p>`;
+                        AT_RESULT.innerHTML = `<p style="overflow: hidden;">${escapeHtmlBr(res.error)}</p>`;
                         !silent && createToast(t('toast_exe_failed'), 'red');
                         return false
                     }
@@ -3421,13 +3424,13 @@ function main_func() {
 
             if (res) {
                 if (res.error) {
-                    AT_RESULT.innerHTML = `<p style="overflow: hidden;">${res.error}</p>`;
+                    AT_RESULT.innerHTML = `<p style="overflow: hidden;">${escapeHtmlBr(res.error)}</p>`;
                     createToast(t('toast_exe_failed'), 'red');
                     return;
                 }
                 //清空imei缓存
                 resetDiagImeiCache()
-                AT_RESULT.innerHTML = `<p onclick="copyText(event)"  style="overflow: hidden;">${parseCGEQOSRDP(res.result)}</p>`;
+                AT_RESULT.innerHTML = `<p onclick="copyText(event)"  style="overflow: hidden;">${escapeHtmlBr(parseCGEQOSRDP(res.result))}</p>`;
                 createToast(t('toast_exe_success'), 'green');
             } else {
                 createToast(t('toast_exe_failed'), 'red');
@@ -3435,7 +3438,7 @@ function main_func() {
 
         } catch (err) {
             const error = err?.error || t('toast_unknow_err');
-            AT_RESULT.innerHTML = `<p style="overflow: hidden;">${error}</p>`;
+            AT_RESULT.innerHTML = `<p style="overflow: hidden;">${escapeHtmlBr(error)}</p>`;
             createToast(t('toast_exe_failed'), 'red');
         }
     };
@@ -3449,12 +3452,12 @@ function main_func() {
 
             if (res) {
                 if (res.error) {
-                    AT_RESULT.innerHTML = `<p style="overflow: hidden;">${res.error}</p>`;
+                    AT_RESULT.innerHTML = `<p style="overflow: hidden;">${escapeHtmlBr(res.error)}</p>`;
                     createToast(t('toast_exe_failed'), 'red');
                     return;
                 }
 
-                AT_RESULT.innerHTML = `<p onclick="copyText(event)"  style="overflow: hidden;">${parseCGEQOSRDP(res.result)}</p>`;
+                AT_RESULT.innerHTML = `<p onclick="copyText(event)"  style="overflow: hidden;">${escapeHtmlBr(parseCGEQOSRDP(res.result))}</p>`;
                 createToast(t('toast_exe_success'), 'green');
             } else {
                 createToast(t('toast_exe_failed'), 'red');
@@ -3462,7 +3465,7 @@ function main_func() {
 
         } catch (err) {
             const error = err?.error || t('toast_unknow_err');
-            AT_RESULT.innerHTML = `<p style="overflow: hidden;">${error}</p>`;
+            AT_RESULT.innerHTML = `<p style="overflow: hidden;">${escapeHtmlBr(error)}</p>`;
             createToast(t('toast_exe_failed'), 'red');
         }
     };
@@ -3476,12 +3479,12 @@ function main_func() {
             const res = await executeATCommand(params);
             if (res) {
                 if (res.error) {
-                    AT_RESULT.innerHTML = `<p style="overflow: hidden;">${res.error}</p>`;
+                    AT_RESULT.innerHTML = `<p style="overflow: hidden;">${escapeHtmlBr(res.error)}</p>`;
                     !silent && createToast(t('toast_exe_failed'), 'red');
                     return false
                 }
 
-                AT_RESULT.innerHTML = `<p onclick="copyText(event)"  style="overflow: hidden;">${res.result}</p>`;
+                AT_RESULT.innerHTML = `<p onclick="copyText(event)"  style="overflow: hidden;">${escapeHtmlBr(res.result)}</p>`;
                 !silent && createToast(t('toast_exe_success'), 'green');
                 //只要执行AT了，就默认清空一次imei展示缓存
                 resetDiagImeiCache()
@@ -3492,7 +3495,7 @@ function main_func() {
             }
         } catch (err) {
             const error = err?.error || t('toast_unknow_err');
-            AT_RESULT.innerHTML = `<p style="overflow: hidden;">${error}</p>`;
+            AT_RESULT.innerHTML = `<p style="overflow: hidden;">${escapeHtmlBr(error)}</p>`;
             !silent && createToast(t('toast_exe_failed'), 'red');
             return false
         }
@@ -3581,11 +3584,11 @@ function main_func() {
             const res = await (await fetch(`${KANO_baseURL}/smbPath?enable=${flag}`, { headers: common_headers })).json()
             if (res) {
                 if (res.error) {
-                    AT_RESULT.innerHTML = res.error;
+                    AT_RESULT.innerHTML = escapeHtmlBr(res.error);
                     createToast(t('toast_exe_failed'), 'red');
                     return;
                 }
-                AT_RESULT.innerHTML = res.result;
+                AT_RESULT.innerHTML = escapeHtmlBr(res.result);
                 createToast(t('toast_exe_done'), 'green');
             } else {
                 AT_RESULT.innerHTML = '';
@@ -4427,9 +4430,9 @@ function main_func() {
                     }
                     //获取changeLog
                     // if (!isLatest) {
-                    changelogTextContent.innerHTML = changelog
+                    changelogTextContent.innerHTML = escapeHtmlBr(changelog)
                     // }
-                    OTATextContent.innerHTML = `${isLatest ? `<div>${t('is_latest_version')}：V${app_ver} ${app_ver_code}</div>` : `<div>${t('found_update')}:${name}<br/>${date_str ? `${t('release_date')}：${date_str}` : ''}</div>`}`
+                    OTATextContent.innerHTML = `${isLatest ? `<div>${t('is_latest_version')}：V${escapeHtml(app_ver)} ${escapeHtml(app_ver_code)}</div>` : `<div>${t('found_update')}:${escapeHtml(name)}<br/>${date_str ? `${t('release_date')}：${escapeHtml(date_str)}` : ''}</div>`}`
 
                 }
                 return !isLatest ? {
@@ -4485,7 +4488,7 @@ function main_func() {
             if (adbStatusEl && adbStatusEl.length > 0) {
                 adbStatusEl.forEach((item) => {
                     try {
-                        item.innerHTML = adb_text + `<br/>${t('usb_debugging_status')}：${adbSwitch ? `${t('usb_debugging_active')}` : `${t('usb_debugging_inactive')}`}` + `<br/>${t('firmware_version')}：${version}`
+                        item.innerHTML = adb_text + `<br/>${t('usb_debugging_status')}：${adbSwitch ? `${t('usb_debugging_active')}` : `${t('usb_debugging_inactive')}`}` + `<br/>${t('firmware_version')}：${escapeHtml(version)}`
                     } catch { }
                 })
             }
@@ -4510,11 +4513,11 @@ function main_func() {
             })).json()
             if (res) {
                 if (res.error) {
-                    AT_RESULT.innerHTML = res.error;
+                    AT_RESULT.innerHTML = escapeHtmlBr(res.error);
                     createToast(t('toast_exe_failed'), 'red');
                     return;
                 }
-                AT_RESULT.innerHTML = res.result;
+                AT_RESULT.innerHTML = escapeHtmlBr(res.result);
                 createToast(t('toast_exe_done'), 'green');
             } else {
                 AT_RESULT.innerHTML = '';
@@ -5326,7 +5329,7 @@ echo ${flag ? '1' : '0'} > /sys/devices/system/cpu/cpu3/online
         const result = await runShellWithRoot(shell)
         result.success ? createToast(t('toast_exe_success'), 'green') : createToast(t('toast_exe_failed'), 'red')
 
-        AD_RESULT.innerHTML = result.content
+        AD_RESULT.innerHTML = escapeHtmlBr(result.content)
 
     }
 
@@ -5375,8 +5378,8 @@ echo ${flag ? '1' : '0'} > /sys/devices/system/cpu/cpu3/online
         li.innerHTML = `
     <div style="background: none;display: flex;width: 100%;margin-top: 10px;overflow: auto;" class="card-item">
       <div style="flex:1;margin-right: 10px;">
-        <p><span>${t('task_name_label')}</span><span>${task.id}</span></p>
-        <p><span>${t('trigger_time_label')}</span><span>${task.time}</span></p>
+        <p><span>${t('task_name_label')}</span><span>${escapeHtml(task.id)}</span></p>
+        <p><span>${t('trigger_time_label')}</span><span>${escapeHtml(task.time)}</span></p>
         <p><span>${t('last_exe')}</span><span>${task.lastRunTimestamp ? (new Date(task.lastRunTimestamp).toLocaleString('zh-cn').replaceAll('/', '-')) : t('not_exec')}${task.hasTriggered ? `（${t('exec_ed')}）` : ""}</span></p>
         <p><span>${t('repeat_daily_label')}</span><span>${task.repeatDaily ? t('yes') : t('no')}</span></p>
         <p><span>${t('action_param')}:</span></p>
@@ -5384,7 +5387,7 @@ echo ${flag ? '1' : '0'} > /sys/devices/system/cpu/cpu3/online
       </div>
     </div>
     <div style="padding-bottom:10px;text-align: right;">
-      <button class="btn editBtn" style="margin: 2px;padding: 4px 6px;" onclick="editTask('${task.id}')">${t('edit')}</button>
+      <button class="btn editBtn" style="margin: 2px;padding: 4px 6px;" onclick="editTask('${escapeJsHtml(task.id)}')">${t('edit')}</button>
       <button class="btn deleteBtn" style="margin: 2px;padding: 4px 6px;">${t('delete')}</button>
     </div>
   `
@@ -5927,7 +5930,7 @@ echo ${flag ? '1' : '0'} > /sys/devices/system/cpu/cpu3/online
             deleteBtn.innerHTML = `<svg fill="var(--dark-text-color)" stroke="currentColor"  width="20px" height="20px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M736 352.032L736.096 800h-0.128L288 799.968 288.032 352 736 352.032zM384 224h256v64h-256V224z m448 64h-128V202.624C704 182.048 687.232 160 640.16 160h-256.32C336.768 160 320 182.048 320 202.624V288H192a32 32 0 1 0 0 64h32V799.968C224 835.296 252.704 864 288.032 864h447.936A64.064 64.064 0 0 0 800 799.968V352h32a32 32 0 1 0 0-64z"  /><path d="M608 690.56a32 32 0 0 0 32-32V448a32 32 0 1 0-64 0v210.56a32 32 0 0 0 32 32M416 690.56a32 32 0 0 0 32-32V448a32 32 0 1 0-64 0v210.56a32 32 0 0 0 32 32"  /></svg>`
             deleteBtn.onclick = () => {
                 plugins.splice(index, 1)
-                createToast(`${t('deleted_plugin')}：${item.name}，${t('save_to_apply')}！`)
+                createToast(`${t('deleted_plugin')}：${escapeHtml(item.name)}，${t('save_to_apply')}！`)
                 renderPluginList() // 重新渲染
             }
 
@@ -5937,7 +5940,7 @@ echo ${flag ? '1' : '0'} > /sys/devices/system/cpu/cpu3/online
             sortBtn.innerHTML = `<svg fill="var(--dark-text-color)" stroke="currentColor"  width="20px" height="20px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M909.3 506.3L781.7 405.6c-4.7-3.7-11.7-0.4-11.7 5.7V476H548V254h64.8c6 0 9.4-7 5.7-11.7L517.7 114.7c-2.9-3.7-8.5-3.7-11.3 0L405.6 242.3c-3.7 4.7-0.4 11.7 5.7 11.7H476v222H254v-64.8c0-6-7-9.4-11.7-5.7L114.7 506.3c-3.7 2.9-3.7 8.5 0 11.3l127.5 100.8c4.7 3.7 11.7 0.4 11.7-5.7V548h222v222h-64.8c-6 0-9.4 7-5.7 11.7l100.8 127.5c2.9 3.7 8.5 3.7 11.3 0l100.8-127.5c3.7-4.7 0.4-11.7-5.7-11.7H548V548h222v64.8c0 6 7 9.4 11.7 5.7l127.5-100.8c3.7-2.9 3.7-8.5 0.1-11.4z" /></svg>`
 
             const text = document.createElement('span')
-            text.innerHTML = item.disabed ? `<del style="opacity:.6">${item.name}</del>` : item.name
+            text.innerHTML = item.disabed ? `<del style="opacity:.6">${escapeHtml(item.name)}</del>` : escapeHtml(item.name)
             text.style.padding = '2px 6px'
 
             text.onclick = () => {
@@ -6118,14 +6121,14 @@ echo ${flag ? '1' : '0'} > /sys/devices/system/cpu/cpu3/online
                 AD_RESULT.innerHTML = `
                 <div style="min-width:200px;font-size:12px">
                 <p>${t('advanced_checked_disabled_update')}</p>
-                <p>${res0.content}</p>
-                <p>${res1.content}</p>
-                <p>${res2.content}</p>
-                <p>${res3.content}</p>
-                <p>${res4.content}</p>
-                <p>${res5.content}</p>
-                <p>${res6.content}</p>
-                <p>${res7.content}</p>
+                <p>${escapeHtmlBr(res0.content)}</p>
+                <p>${escapeHtmlBr(res1.content)}</p>
+                <p>${escapeHtmlBr(res2.content)}</p>
+                <p>${escapeHtmlBr(res3.content)}</p>
+                <p>${escapeHtmlBr(res4.content)}</p>
+                <p>${escapeHtmlBr(res5.content)}</p>
+                <p>${escapeHtmlBr(res6.content)}</p>
+                <p>${escapeHtmlBr(res7.content)}</p>
                 </div>`
             } else {
                 createToast(t('toast_not_enabled_advanced_tools'), '')
@@ -6444,15 +6447,15 @@ echo ${flag ? '1' : '0'} > /sys/devices/system/cpu/cpu3/online
             li.className = 'plugin-item'
             li.innerHTML = `
                             <div class="plugin-title">
-                            ${plugin.name}
+                            ${escapeHtml(plugin.name)}
                             </div>
                             <div class="info">
-                                <span>MD5:${plugin?.hash_info?.md5}</span><br>
+                                <span>MD5:${escapeHtml(String(plugin?.hash_info?.md5))}</span><br>
                                 <span>last-modified: ${new Date(plugin?.modified).toLocaleString('zh-cn')}</span>
                             </div>
                             <div class="actions">
-                                <button style="background:${exsits_plugin_index === -1 ? '' : 'var(--dark-btn-color-active)'}" onclick="installPluginFromStore('${download_url}/${plugin.name}','${plugin.name}')">${exsits_plugin_index === -1 ? t('one_click_install') : t('reinstall')}</button>
-                                <button onclick="downloadUrl('${download_url}/${plugin.name}')">${t('only_download')}</button>
+                                <button style="background:${exsits_plugin_index === -1 ? '' : 'var(--dark-btn-color-active)'}" onclick="installPluginFromStore('${escapeJsHtml(`${download_url}/${plugin.name}`)}','${escapeJsHtml(plugin.name)}')">${exsits_plugin_index === -1 ? t('one_click_install') : t('reinstall')}</button>
+                                <button onclick="downloadUrl('${escapeJsHtml(`${download_url}/${plugin.name}`)}')">${t('only_download')}</button>
                             </div>
                         `
             items_el.appendChild(li)
@@ -6578,7 +6581,7 @@ echo ${flag ? '1' : '0'} > /sys/devices/system/cpu/cpu3/online
                         foundList.forEach(el => {
                             const itemEl = document.createElement("div")
                             itemEl.className = "searchListItem"
-                            itemEl.innerHTML = el.name
+                            itemEl.textContent = el.name
                             itemEl.onclick = () => {
                                 pluginSearchInputEl.value = el.name
                                 document.querySelector("#pluginSearchBtn").click()
@@ -6813,7 +6816,7 @@ echo ${flag ? '1' : '0'} > /sys/devices/system/cpu/cpu3/online
                 const res = await runShellWithRoot(`/data/data/com.minikano.f50_sms/files/imei_reader`)
                 //清空imei展示缓存
                 resetDiagImeiCache()
-                AT_RESULT.innerHTML = `<p style="font-weight:bolder;overflow:hidden" onclick="copyText(event)">${res.content.replaceAll('\n', "<br>")}</p>`
+                AT_RESULT.innerHTML = `<p style="font-weight:bolder;overflow:hidden" onclick="copyText(event)">${escapeHtmlBr(res.content)}</p>`
             } catch {
                 AT_RESULT.innerHTML = ""
             }
@@ -6959,11 +6962,9 @@ echo ${flag ? '1' : '0'} > /sys/devices/system/cpu/cpu3/online
         }
         try {
             const api = 'https://api.kanokano.cn/ufi_tools_report'
-            const { device_id: uuid } = await (await fetch(`${KANO_baseURL}/device_id`, {
-                headers: common_headers
-            })).json()
-            if (uuid) {
-                const { message, has_read_message } = await (await fetch(`${KANO_baseURL}/proxy/--${api}/get_message/${uuid}`, {
+            // 不再拉取/上报设备 uuid，仅保留公告拉取功能
+            {
+                const { message, has_read_message } = await (await fetch(`${KANO_baseURL}/proxy/--${api}/get_message`, {
                     headers: common_headers
                 })).json()
                 if (has_read_message == true || has_read_message == "true") return
@@ -6984,7 +6985,7 @@ echo ${flag ? '1' : '0'} > /sys/devices/system/cpu/cpu3/online
                 }
                 btn.onclick = async () => {
                     try {
-                        const { has_read_message } = await (await fetch(`${KANO_baseURL}/proxy/--${api}/set_read_message/${uuid}`, {
+                        const { has_read_message } = await (await fetch(`${KANO_baseURL}/proxy/--${api}/set_read_message`, {
                             method: 'post',
                             headers: common_headers
                         })).json()
@@ -6993,7 +6994,7 @@ echo ${flag ? '1' : '0'} > /sys/devices/system/cpu/cpu3/online
                         }
                     } catch {
                         try {
-                            const { has_read_message } = await (await fetch(`${api}/set_read_message/${uuid}`, {
+                            const { has_read_message } = await (await fetch(`${api}/set_read_message`, {
                                 method: 'post'
                             })).json()
                             if (has_read_message) {

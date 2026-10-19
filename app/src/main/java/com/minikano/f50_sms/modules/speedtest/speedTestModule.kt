@@ -35,7 +35,6 @@ fun Route.speedTestModule(context: Context) {
             val buffer = SpeedTestCache.buffer
 
             if (enableCors) {
-                call.response.headers.append("Access-Control-Allow-Origin", "*")
                 call.response.headers.append("Access-Control-Allow-Methods", "GET, POST")
             }
 

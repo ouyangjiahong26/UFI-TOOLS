@@ -39,14 +39,12 @@ fun Route.adbModule(context: Context) {
             }
 
             // 响应
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success"}""",
                 ContentType.Application.Json
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "解析ADB_WIFI POST 请求出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"参数解析失败"}""",
                 ContentType.Application.Json,
@@ -63,11 +61,9 @@ fun Route.adbModule(context: Context) {
             val resultJson = JSONObject()
                 .put("pwd",sharedPrefs.getString("ADMIN_PWD",""))
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(resultJson.toString(), ContentType.Application.Json, HttpStatusCode.OK)
         } catch (e: Exception) {
             KanoLog.d(TAG, "请求出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"请求出错"}""",
                 ContentType.Application.Json,
@@ -130,14 +126,12 @@ fun Route.adbModule(context: Context) {
             KanoLog.d(TAG, "ADMIN_PWD:${sharedPrefs.getString("ADMIN_PWD", "")}")
 
             // 响应
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"success","enabled":"$enabled"}""",
                 ContentType.Application.Json
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "解析ADB_WIFI POST 请求出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"参数解析失败"}""",
                 ContentType.Application.Json,
@@ -148,7 +142,6 @@ fun Route.adbModule(context: Context) {
 
     //网络ADB启动状态
     get("/api/adb_alive") {
-        call.response.headers.append("Access-Control-Allow-Origin", "*")
         call.respondText(
             """{"result":"${ADBService.adbIsReady}"}""".trimIndent(),
             ContentType.Application.Json,

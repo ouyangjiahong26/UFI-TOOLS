@@ -83,11 +83,9 @@ fun Route.otaModule(context: Context) {
             }
         """.trimIndent()
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(resultJson, ContentType.Application.Json, HttpStatusCode.OK)
         } catch (e: Exception) {
             KanoLog.d(TAG, "请求出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"请求出错"}""",
                 ContentType.Application.Json,
@@ -105,6 +103,18 @@ fun Route.otaModule(context: Context) {
             val apkUrl = json.optString("apk_url", "").trim()
             if (apkUrl.isEmpty()) {
                 throw IllegalArgumentException("请提供 apk_url")
+            }
+
+            // [安全修复] OTA 下载源锁定为当前配置的资源服务器（默认 pan.kanokano.cn），
+            // 防止已登录者把设备变成"从任意服务器拉 APK 并静默安装"的跳板
+            val allowedHost = try { java.net.URI(AppMeta.GLOBAL_SERVER_URL).host } catch (e: Exception) { null }
+            val apkHost = try { java.net.URI(apkUrl).host } catch (e: Exception) { null }
+            if (allowedHost.isNullOrBlank() || apkHost.isNullOrBlank() ||
+                !apkHost.equals(allowedHost, ignoreCase = true)) {
+                throw IllegalArgumentException("apk_url 必须来自当前资源服务器 ${AppMeta.GLOBAL_SERVER_URL}")
+            }
+            if (!apkUrl.startsWith("https://")) {
+                throw IllegalArgumentException("apk_url 必须使用 https")
             }
 
             KanoLog.d(TAG, "接收到 apk_url=$apkUrl")
@@ -144,7 +154,6 @@ fun Route.otaModule(context: Context) {
                 }
             }
 
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"result":"download_started"}""",
                 ContentType.Application.Json,
@@ -152,7 +161,6 @@ fun Route.otaModule(context: Context) {
             )
         } catch (e: Exception) {
             KanoLog.d(TAG, "【主线程】执行 /download_apk 出错：${e.message}")
-            call.response.headers.append("Access-Control-Allow-Origin", "*")
             call.respondText(
                 """{"error":"${e.message ?: "未知错误"}"}""",
                 ContentType.Application.Json,
@@ -178,7 +186,6 @@ fun Route.otaModule(context: Context) {
         }
     """.trimIndent()
 
-        call.response.headers.append("Access-Control-Allow-Origin", "*")
         call.respondText(json, ContentType.Application.Json)
     }
 
@@ -209,13 +216,15 @@ fun Route.otaModule(context: Context) {
                     val shellScript = """
                 #!/system/bin/sh
                 nohup sh -c '
-                pm install -r -g "${ApkState.downloadResultPath}" >> /sdcard/ufi_tools_update.log 2>&1
+                pm install -r "${ApkState.downloadResultPath}" >> /sdcard/ufi_tools_update.log 2>&1
                 dumpsys activity start-activity -n com.minikano.f50_sms/.MainActivity --ez silent true >> /sdcard/ufi_tools_update.log 2>&1
                 sync
                 sync
                 echo "${'$'}(date)install and sync complete!" >> /sdcard/ufi_tools_update.log
                 ' >/dev/null 2>&1 &
                 """.trimIndent()
+                    // [安全修复] 原为 pm install -r -g：-g 会在静默安装时授予全部运行时权限，
+                    // 同签名升级本就保留既有授权，去掉 -g 降低 OTA 面的权限暴露
 
                     //保存sh
                     val scriptFile =

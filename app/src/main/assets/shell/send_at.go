@@ -100,6 +100,14 @@ func main() {
 	// 我们不再需要 "miscserver" 或 "sendAt" 字符串，直接传递纯 AT 命令
 
 	// 根据Android API等级选择合适的命令字符串
+	// [安全修复] 先校验 AT 命令不含可逃逸 shell 引号的字符（' $ ` \ 及换行），
+	// strconv.Quote 不转义 $ 和反引号，双引号上下文中仍可被注入
+	for _, ch := range cmdArg {
+		if ch == '\'' || ch == '$' || ch == '`' || ch == '\\' || ch == '\n' || ch == '\r' {
+			os.Stderr.WriteString("AT command contains illegal characters\n")
+			os.Exit(1)
+		}
+	}
 	var cmdString string
 	if getAndroidAPILevel() > 33 {
 		// Android 14+ (API > 33): 使用新的 IToolControl 接口

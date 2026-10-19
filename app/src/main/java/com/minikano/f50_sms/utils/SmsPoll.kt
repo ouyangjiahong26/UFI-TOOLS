@@ -100,20 +100,23 @@ object SmsPoll {
         try {
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 .withZone(ZoneId.systemDefault())
-            val smsText = JSONObject.quote(sms_data.body.trim()).removeSurrounding("\"")
+            // [安全修复] 短信正文/发件人/时间不再预先拼进命令行（短信内容可被注入 curl 参数），
+            // 改为传给 KanoCURL 在 shell 分词之后做单参数替换，保证内容始终是一个 argv
+            val smsText = sms_data.body.trim()
             val smsFrom = sms_data.address
             val smsTime = formatter.format(Instant.ofEpochMilli(sms_data.timestamp))
 
-            //替换并发送
-            var replacedCurl = originalCurl
-                .replace("{{sms-body}}", smsText)
-                .replace("{{sms-time}}", smsTime)
-                .replace("{{sms-from}}", smsFrom).trimIndent()
+            //寻找可替换的其他占位符（电量/CPU等设备生成值，非攻击者可控）
+            val replacedCurl = buildStatusSmsMsg(originalCurl.trimIndent(), context, TAG)
 
-            //寻找可替换的其他占位符
-            replacedCurl = buildStatusSmsMsg(replacedCurl,context, TAG)
-
-            KanoCURL(context).send(replacedCurl)
+            KanoCURL(context).send(
+                replacedCurl,
+                mapOf(
+                    "{{sms-body}}" to smsText,
+                    "{{sms-from}}" to smsFrom,
+                    "{{sms-time}}" to smsTime
+                )
+            )
         } catch (e: Exception){
             KanoLog.e(TAG,"短信转发(forwardSmsByCurl)出错：",e)
         }

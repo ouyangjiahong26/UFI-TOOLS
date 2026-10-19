@@ -19,9 +19,11 @@ val npmBuild by tasks.registering(Exec::class) {
         println(System.getenv("PATH"))
     }
     commandLine = if (System.getProperty("os.name").startsWith("Windows")) {
-        listOf("cmd", "/c", "npm", "run", "build")
+        // [安全修复] --debug 模式：前端 JS 原样复制、不做混淆，
+        // 保证打进 APK 的脚本与仓库可审计源码一致（原 release 会混淆 requests.js/main.js）
+        listOf("cmd", "/c", "npm", "run", "build", "--", "--debug")
     } else {
-        listOf("sh", "-c", "npm run build")
+        listOf("sh", "-c", "npm run build -- --debug")
     }
     group = "build"
     description = "Build frontend assets using npm"
@@ -47,6 +49,15 @@ tasks.register<Delete>("deleteDumpSymsFromApk") {
     delete(file("${layout.buildDirectory}/dump_syms"))
 }
 
+// [自建签名] 通过环境变量注入签名配置（CI 使用 GitHub Secrets）；
+// 未设置环境变量时行为与原构建一致（release 不签名）
+val keystoreFile = System.getenv("KEYSTORE_FILE")
+val keystorePassword = System.getenv("KEYSTORE_PASSWORD")
+val keyAliasEnv = System.getenv("KEY_ALIAS")
+val keyPasswordEnv = System.getenv("KEY_PASSWORD")
+val hasSigningEnv = keystoreFile != null && keystorePassword != null &&
+        keyAliasEnv != null && keyPasswordEnv != null
+
 android {
     namespace = "com.minikano.f50_sms"
     compileSdk = 35
@@ -61,6 +72,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (hasSigningEnv) {
+            create("selfRelease") {
+                storeFile = file(keystoreFile!!)
+                storePassword = keystorePassword
+                keyAlias = keyAliasEnv
+                keyPassword = keyPasswordEnv
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -68,6 +90,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (hasSigningEnv) {
+                signingConfig = signingConfigs.getByName("selfRelease")
+            }
         }
     }
     compileOptions {
