@@ -8,7 +8,6 @@ import com.minikano.f50_sms.utils.KanoUtils.Companion.normalizePath
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
-import io.ktor.server.request.queryString
 
 object KanoAuth {
     val PREFS_NAME = "kano_ZTE_store"
@@ -39,8 +38,9 @@ object KanoAuth {
         val uri = normalizePath(rawPath)
         val uriForAuth = uri
         val rawPathForSign = normalizeLeadingSlashes(rawPath)
+        // query 可能携带敏感参数，日志只记录路径与方法
         KanoLog.d("UFI_TOOLS_LOG_KanoAuth") {
-            "uri:$uri\t rawPath:$rawPath \t method:$method \t query:${call.request.queryString()}"
+            "uri:$uri\t rawPath:$rawPath \t method:$method"
         }
 
         val isApi = uri == "/api" || uri.startsWith("/api/")

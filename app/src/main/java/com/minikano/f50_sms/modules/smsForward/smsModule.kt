@@ -141,7 +141,6 @@ fun Route.smsModule(context: Context) {
             val originalCurl = json.getString("curl_text")
 
             KanoLog.d(TAG, "是否找到{{sms}}：${originalCurl.contains("{{sms}}")}")
-            KanoLog.d(TAG, "curl配置：$originalCurl")
 
             if (!originalCurl.contains("{{sms-body}}")) throw Exception("没有找到“{{sms-body}}”占位符")
             if (!originalCurl.contains("{{sms-time}}")) throw Exception("没有找到“{{sms-time}}”占位符")

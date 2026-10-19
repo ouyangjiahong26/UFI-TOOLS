@@ -649,8 +649,9 @@ class ShellKano {
                         val ADB_IP =
                             sharedPrefs.getString("gateway_ip", "")?.substringBefore(":")
                                 ?: throw Exception("没有ADMIN_IP")
+                        // 不带默认值：官方后台密码由用户在界面中填写，避免默认密码随 APK 泄漏
                         val ADMIN_PWD =
-                            sharedPrefs.getString("ADMIN_PWD","Wa@9w+YWRtaW4=") ?: "Wa@9w+YWRtaW4="
+                            sharedPrefs.getString("ADMIN_PWD","") ?: ""
 
                         Log.d(
                             "UFI_TOOLS_LOG", "读取网络ADB所需配置：ADB_IP:${

@@ -227,7 +227,8 @@ class TaskScheduler(
     fun restoreTasks() {
         if (TaskSchedulerManager.sharedPrefs == null) return
         val ADB_IP = TaskSchedulerManager.sharedPrefs!!.getString("gateway_ip", "")?.substringBefore(":").orEmpty()
-        val ADMIN_PWD = TaskSchedulerManager.sharedPrefs!!.getString("ADMIN_PWD", "Wa@9w+YWRtaW4=") ?: "Wa@9w+YWRtaW4="
+        // 不带默认值：官方后台密码由用户在界面中填写，避免默认密码随 APK 泄漏
+        val ADMIN_PWD = TaskSchedulerManager.sharedPrefs!!.getString("ADMIN_PWD", "") ?: ""
         val PREFS_NAME = "kano_ZTE_store"
         val sharedPrefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 

@@ -1008,9 +1008,9 @@ class KanoUtils {
                             return@launch
                         }
 
+                    // 不带默认值：官方后台密码由用户在界面中填写，避免默认密码随 APK 泄漏
                     val adminPwd =
-                        sharedPrefs.getString("ADMIN_PWD", "Wa@9w+YWRtaW4=")
-                            ?: "Wa@9w+YWRtaW4="
+                        sharedPrefs.getString("ADMIN_PWD", "") ?: ""
 
                     val req = KanoGoformRequest("http://$adbIp:8080")
 
