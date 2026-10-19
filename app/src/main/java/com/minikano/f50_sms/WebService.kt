@@ -70,8 +70,8 @@ class WebService : Service() {
             WakeLock.execWakeLock(pm)
         }
 
-        // 注册广播接收器
-        registerReceiver(statusReceiver, IntentFilter(UI_INTENT), Context.RECEIVER_EXPORTED)
+        // 注册广播接收器。该 action 只有本应用发送，NOT_EXPORTED 阻止其他应用伪造广播启停服务
+        registerReceiver(statusReceiver, IntentFilter(UI_INTENT), Context.RECEIVER_NOT_EXPORTED)
         startForeground(114514, createNotification())
 
         allowAutoReStart = true

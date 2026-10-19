@@ -11,6 +11,7 @@ app.use('/api', createProxyMiddleware({
 
 app.use('/', express.static(path.join(__dirname, '/public')));
 
-app.listen(3000, () => {
+// 只绑定回环地址，避免局域网内其他主机借本代理直接操作设备
+app.listen(3000, '127.0.0.1', () => {
   console.log('Dev server running at http://localhost:3000');
 });
